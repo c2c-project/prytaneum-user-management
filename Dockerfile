@@ -1,4 +1,4 @@
-FROM node:12
+FROM node:latest
 
 # Create app directory
 WORKDIR /usr/src/app
@@ -17,4 +17,4 @@ RUN yarn install
 COPY . .
 
 EXPOSE 8080
-CMD [ "node", "index.js" ]
+CMD [ "yarn", "start" ]

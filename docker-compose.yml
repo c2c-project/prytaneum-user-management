@@ -1,0 +1,28 @@
+version: "2.1"
+services:
+  server:
+    container_name: prytanea_auth
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: "yarn start"
+    volumes:
+        - .:/usr/src/app/services/auth
+    ports:
+      - "3001:3000"
+
+#   client:
+#     container_name: client
+#     build:
+#       context: .
+#       dockerfile: Dockerfile
+#     command: "npm run start:client"
+#     volumes:
+#       - ./client/src:/usr/src/app/client/src
+#       - ./client/public:/usr/src/app/client/public
+#     ports:
+#       - "3000:3000"
+#     links:
+#       - server
+#     depends_on:
+#       - server
