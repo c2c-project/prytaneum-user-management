@@ -1,5 +1,6 @@
 module.exports = {
     require: '@babel/register',
-    watch: true,
-    recursive: true
+    watch: false,
+    recursive: true,
+    exit: true
 };
