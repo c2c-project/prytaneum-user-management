@@ -1,11 +1,12 @@
 version: 2.1
-# orbs:
+orbs:
+    dotenv: anilanar/dotenv@1.0.0
 #   node: circleci/node@2.1.0
 jobs:
   build-and-test:
     docker:
-        - image: circleci/node:latest
-        - image: circleci/mongo:latest
+        - image: circleci/node:14.2.0-stretch
+        - image: circleci/mongo:4.2.6
     # executor:
     #   name: node/default
     steps:
@@ -22,6 +23,8 @@ jobs:
             key: dependency-cache-{{ checksum "yarn.lock" }}
             paths:
                 - node_modules
+        - dotenv/source:
+            path: .env.example
         - run: yarn test
 workflows:
     build-and-test:
