@@ -1,18 +1,28 @@
 version: 2.1
-orbs:
-  node: circleci/node@2.1.0
+# orbs:
+#   node: circleci/node@2.1.0
 jobs:
   build-and-test:
-    executor:
-      name: node/default
     docker:
-        - image: mongo:4.2.0
+        - image: circleci/node:latest
+        - image: circleci/mongo:latest
+    # executor:
+    #   name: node/default
     steps:
-      - checkout
-      - node/with-cache:
-          steps:
-            - run: yarn install
-            - run: yarn test
+        - checkout
+        # - run:
+        #     name: Update npm
+        #     command: 'sudo npm install -g npm@latest'
+        - restore_cache:
+            key: dependency-cache-{{ checksum "yarn.lock" }}
+        - run:
+            name: Install npm wee
+            command: npm install
+        - save_cache:
+            key: dependency-cache-{{ checksum "yarn.lock" }}
+            paths:
+                - node_modules
+        - run: yarn test
 workflows:
     build-and-test:
       jobs:
