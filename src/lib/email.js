@@ -1,8 +1,8 @@
-// eslint-disable-next-line
-export function sendEmail() {
+function sendEmail() {}
 
-}
+function sendPasswordReset() {}
 
-export function sendPasswordReset() {
-    
-}
+export default {
+    sendPasswordReset,
+    sendEmail,
+};

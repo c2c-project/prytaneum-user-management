@@ -11,12 +11,12 @@ const BASE_USER = {
 
 /**
  * @description Realistically, only one of the required's fields within the requirements object will be used at any given time
- * @arg userRoles the array of string codes corresponding to the user's assigned roles
- * @arg requirements the object containing different role requirements for what they are trying to access
+ * @arg {Array} userRoles the array of string codes corresponding to the user's assigned roles
+ * @arg {Object} requirements the object containing different role requirements for what they are trying to access
  * @returns {Promise} evalutes to a boolean
  */
 const isAllowed = async (
-    userRoles,
+    userRoles = [],
     { requiredAll = [], requiredAny = [], requiredNot = [] } = {}
 ) => {
     if (userRoles.length === 0) {
@@ -76,7 +76,7 @@ const sendPasswordResetEmail = async (email) => {
         const token = await jwt.sign({ _id }, process.env.JWT_SECRET, {
             expiresIn: '30m',
         });
-        return Emails.sendPasswordResetEmail(email, token);
+        return Emails.sendPasswordReset(email, token);
     }
     throw new ClientError('Invalid Email');
 };

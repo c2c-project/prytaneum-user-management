@@ -7,7 +7,6 @@ import { errorHandler } from './lib/errors';
 
 dotenv.config();
 
-const { PORT, ORIGIN } = process.env;
 const app = express();
 config(app);
 
@@ -17,5 +16,5 @@ app.use((req, res, next) => {
 });
 app.use(errorHandler);
 
-app.listen(PORT, ORIGIN);
+export default app;
 

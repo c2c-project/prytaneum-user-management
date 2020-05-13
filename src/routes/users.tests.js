@@ -2,15 +2,30 @@ import chai from 'chai';
 import chaihttp from 'chai-http';
 import JWT from 'jsonwebtoken';
 import { ObjectID } from 'mongodb';
-import server from '../../app';
-import Users from '../../db/collections/users';
+import server from '../app';
+import Users from '../db/users';
 
 chai.should();
 chai.use(chaihttp);
 
-// NOTE: database must be seeded with a mod@example.com w/ password 1 for these to work properly
+const mockUser = {
+    username: '__test__',
+    password: '1',
+    email: '__test__@__test__.com',
+    userRoles: ['user'],
+};
 describe('users', function () {
     let jwt;
+
+    before(async function () {
+        const { _id } = await Users.addUser(mockUser);
+        mockUser._id = _id;
+    });
+
+    after(async function () {
+        await Users.removeUser(mockUser._id);
+    });
+
     describe('#login', function () {
         it('should reject the login with no username or password', function (done) {
             chai.request(server)
@@ -23,7 +38,7 @@ describe('users', function () {
         it('should reject a login with no password', function (done) {
             chai.request(server)
                 .post('/api/users/login')
-                .send({ username: 'mod@example.com' })
+                .send({ username: mockUser.username })
                 .end(function (err, res) {
                     res.should.have.status(400);
                     done();
@@ -32,7 +47,10 @@ describe('users', function () {
         it('should reject a login with incorrect password', function (done) {
             chai.request(server)
                 .post('/api/users/login')
-                .send({ username: 'mod@example.com', password: '2' })
+                .send({
+                    username: mockUser.username,
+                    password: 'wrongpassword',
+                })
                 .end(function (err, res) {
                     res.should.have.status(401);
                     done();
@@ -41,7 +59,10 @@ describe('users', function () {
         it('should accept a valid username & password', function (done) {
             chai.request(server)
                 .post('/api/users/login')
-                .send({ username: 'mod@example.com', password: '1' })
+                .send({
+                    username: mockUser.username,
+                    password: mockUser.password,
+                })
                 .end(function (err, res) {
                     res.should.have.status(200);
                     jwt = res.body.jwt;
@@ -49,6 +70,7 @@ describe('users', function () {
                 });
         });
     });
+
     describe('#authenticate', function () {
         it('should accept a valid jwt', function (done) {
             chai.request(server)
@@ -85,7 +107,7 @@ describe('users', function () {
                 });
         });
         it('should accept a valid userId', function (done) {
-            Users.findByEmail('admin@example.com').then((doc) => {
+            Users.findByEmail(mockUser.email).then((doc) => {
                 const { _id } = doc;
                 chai.request(server)
                     .post('/api/users/verification')
@@ -104,7 +126,7 @@ describe('users', function () {
         it('should accept valid email', function (done) {
             chai.request(server)
                 .post('/api/users/request-password-reset')
-                .send({ form: { email: 'admin@example.com' } })
+                .send({ form: { email: mockUser.email } })
                 .end(function (err, res) {
                     if (err) {
                         console.error(err);
@@ -140,7 +162,7 @@ describe('users', function () {
     });
     describe('#consume-password-reset-token', function () {
         it('should accept valid token', function (done) {
-            Users.findByEmail('admin@example.com')
+            Users.findByEmail(mockUser.email)
                 .then((doc) => {
                     const { _id } = doc;
                     JWT.sign(
@@ -188,7 +210,7 @@ describe('users', function () {
                 });
         });
         it('should reject expired token', function (done) {
-            Users.findByEmail('admin@example.com').then((doc) => {
+            Users.findByEmail(mockUser.email).then((doc) => {
                 const { _id } = doc;
                 JWT.sign(
                     { _id },
@@ -219,7 +241,7 @@ describe('users', function () {
             });
         });
         it('should reject mismatching password', function (done) {
-            Users.findByEmail('admin@example.com').then((doc) => {
+            Users.findByEmail(mockUser.email).then((doc) => {
                 const { _id } = doc;
                 JWT.sign(
                     { _id },
