@@ -1,8 +1,8 @@
 import bcrypt from 'bcrypt';
 import jwt from './jwt';
-// import Users from '../db/collections/users';
-// import { ClientError } from './errors';
-// import Emails from './email';
+import Users from '../db/users';
+import { ClientError } from './errors';
+import Emails from './email';
 
 const SALT_ROUNDS = 10;
 const BASE_USER = {

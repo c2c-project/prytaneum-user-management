@@ -2,8 +2,8 @@ import express from 'express';
 import passport from 'passport';
 import jwt from '../lib/jwt';
 import Accounts from '../lib/accounts';
-// import Emails from '../lib/email';
-// import { ClientError } from '../lib/errors';
+import Emails from '../lib/email';
+import { ClientError } from '../lib/errors';
 
 const router = express.Router();
 
@@ -20,7 +20,7 @@ router.post('/register', async (req, res, next) => {
             }
         );
         // TODO: provide option to re-send verification email
-        // Emails.sendEmailVerification(email, _id);
+        Emails.sendEmailVerification(email, _id);
         res.status(200).send();
     } catch (e) {
         next(e);
@@ -99,7 +99,7 @@ router.post('/request-password-reset', async (req, res, next) => {
             next(e);
         }
     } else {
-        // next(new ClientError('Email Missing'));
+        next(new ClientError('Email Missing'));
     }
 });
 
@@ -121,25 +121,25 @@ router.post('/consume-password-reset-token', async (req, res, next) => {
             );
             res.status(200).send('Password Reset');
         } catch (e) {
-            // if (e instanceof ClientError) {
-            //     next(e);
-            // } else {
-            //     const { message } = e;
-            //     if (message === 'jwt expired') {
-            //         next(new ClientError('Expired Link'));
-            //     } else {
-            //         next(new ClientError('Invalid Link'));
-            //     }
-            // }
+            if (e instanceof ClientError) {
+                next(e);
+            } else {
+                const { message } = e;
+                if (message === 'jwt expired') {
+                    next(new ClientError('Expired Link'));
+                } else {
+                    next(new ClientError('Invalid Link'));
+                }
+            }
         }
     } else {
-        // let errorText = '';
-        // if (token === undefined) {
-        //     errorText = 'Token Missing';
-        // } else if (password === undefined || confirmPassword === undefined) {
-        //     errorText = 'Invalid Password';
-        // }
-        // next(new ClientError(errorText));
+        let errorText = '';
+        if (token === undefined) {
+            errorText = 'Token Missing';
+        } else if (password === undefined || confirmPassword === undefined) {
+            errorText = 'Invalid Password';
+        }
+        next(new ClientError(errorText));
     }
 });
 
