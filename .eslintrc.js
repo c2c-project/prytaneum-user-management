@@ -1,6 +1,5 @@
 module.exports = {
     // parser: 'babel-eslint',
-    // plugins: ['import', 'jsx-a11y', 'meteor'],
     //meteorjs/eslint-config-meteor uses airbnb
     extends: ['airbnb', 'prettier'],
     rules: {
