@@ -1,30 +1,25 @@
 version: 2.1
 orbs:
-    dotenv: anilanar/dotenv@1.0.0
 #   node: circleci/node@2.1.0
 jobs:
   build-and-test:
     docker:
-        - image: circleci/node:14.2.0-stretch
-        - image: circleci/mongo:4.2.6
-    # executor:
-    #   name: node/default
+        - image: circleci/node:latest
+        - image: circleci/mongo:latest
     steps:
+        - run:
+            name: Setup Env Vars
+            command: cat .env.example >> $BASH_ENV
         - checkout
-        # - run:
-        #     name: Update npm
-        #     command: 'sudo npm install -g npm@latest'
         - restore_cache:
             key: dependency-cache-{{ checksum "yarn.lock" }}
         - run:
-            name: Install npm wee
-            command: npm install
+            name: install
+            command: yarn install
         - save_cache:
             key: dependency-cache-{{ checksum "yarn.lock" }}
             paths:
                 - node_modules
-        - dotenv/source:
-            path: .env.example
         - run: yarn test
 workflows:
     build-and-test:
