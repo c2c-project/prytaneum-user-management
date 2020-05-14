@@ -10,6 +10,9 @@ dotenv.config();
 const app = express();
 config(app);
 
+if (process.env.NODE_ENV === 'development') {
+    app.get('/', (req, res) => res.sendStatus(200));
+}
 app.use('/api/users', userRoutes);
 app.use((req, res, next) => {
     next(createError(404));
@@ -17,4 +20,3 @@ app.use((req, res, next) => {
 app.use(errorHandler);
 
 export default app;
-

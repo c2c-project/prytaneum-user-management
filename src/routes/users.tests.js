@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-expressions */
 import chai from 'chai';
 import chaihttp from 'chai-http';
 import JWT from 'jsonwebtoken';
@@ -75,7 +76,25 @@ describe('users', function () {
                 });
         });
     });
-
+    describe('#register', function () {
+        it('should register a user', function (done) {
+            chai.request(server)
+                .post('/api/users/register')
+                .send({
+                    form: {
+                        username: 'asdf',
+                        email: 'blah@blah.com',
+                        password: 'password',
+                        confirmPass: 'password',
+                    },
+                })
+                .end(function (err, res) {
+                    (err === null).should.be.true;
+                    res.should.have.status(200);
+                    done();
+                });
+        });
+    });
     describe('#authenticate', function () {
         it('should accept a valid jwt', function (done) {
             chai.request(server)
@@ -104,9 +123,7 @@ describe('users', function () {
                 .post('/api/users/verification')
                 .send({ userId: new ObjectID() })
                 .end(function (err, res) {
-                    if (err) {
-                        console.error(err);
-                    }
+                    (err === null).should.be.true;
                     res.should.have.status(400);
                     done();
                 });
@@ -118,9 +135,7 @@ describe('users', function () {
                     .post('/api/users/verification')
                     .send({ userId: _id })
                     .end(function (err, res) {
-                        if (err) {
-                            console.error(err);
-                        }
+                        (err === null).should.be.true;
                         res.should.have.status(200);
                         done();
                     });
@@ -133,9 +148,7 @@ describe('users', function () {
                 .post('/api/users/request-password-reset')
                 .send({ form: { email: mockUser.email } })
                 .end(function (err, res) {
-                    if (err) {
-                        console.error(err);
-                    }
+                    (err === null).should.be.true;
                     res.should.have.status(200);
                     done();
                 });
@@ -145,9 +158,7 @@ describe('users', function () {
                 .post('/api/users/request-password-reset')
                 .send({ form: { email: undefined } })
                 .end(function (err, res) {
-                    if (err) {
-                        console.error(err);
-                    }
+                    (err === null).should.be.true;
                     res.should.have.status(400);
                     done();
                 });
@@ -157,9 +168,7 @@ describe('users', function () {
                 .post('/api/users/request-password-reset')
                 .send({ form: { email: 'invalidEmail' } })
                 .end(function (err, res) {
-                    if (err) {
-                        console.error(err);
-                    }
+                    (err === null).should.be.true;
                     res.should.have.status(400);
                     done();
                 });
@@ -185,9 +194,7 @@ describe('users', function () {
                                     },
                                 })
                                 .end(function (innerErr, res) {
-                                    if (innerErr) {
-                                        console.error(innerErr);
-                                    }
+                                    (innerErr === null).should.be.true;
                                     res.should.have.status(200);
                                     done();
                                 });
@@ -195,7 +202,8 @@ describe('users', function () {
                     );
                 })
                 .catch((err) => {
-                    console.error(err);
+                    (err === null).should.be.true;
+                    done();
                 });
         });
         it('should reject invalid token', function (done) {
@@ -207,9 +215,7 @@ describe('users', function () {
                 .set('Authorization', 'bearer 123123')
                 .set('Content-Type', 'application/json')
                 .end(function (err, res) {
-                    if (err) {
-                        console.error(err);
-                    }
+                    (err === null).should.be.true;
                     res.should.have.status(400);
                     done();
                 });
@@ -222,6 +228,7 @@ describe('users', function () {
                     process.env.JWT_SECRET,
                     { expiresIn: '1s' },
                     (err, token) => {
+                        (err === null).should.be.true;
                         setTimeout(function () {
                             return chai
                                 .request(server)
@@ -234,9 +241,7 @@ describe('users', function () {
                                     },
                                 })
                                 .end(function (innerErr, res) {
-                                    if (innerErr) {
-                                        console.error(innerErr);
-                                    }
+                                    (innerErr === null).should.be.true;
                                     res.should.have.status(400);
                                     done();
                                 });
@@ -253,13 +258,15 @@ describe('users', function () {
                     process.env.JWT_SECRET,
                     { expiresIn: '2m' },
                     (err, token) => {
+                        (err === null).should.be.true;
                         chai.request(server)
                             .post('/api/users/consume-password-reset-token')
                             .send({
                                 token,
                                 form: { password: '1', confirmPassword: '2' },
                             })
-                            .end(function (err, res) {
+                            .end(function (innerErr, res) {
+                                (innerErr === null).should.be.true;
                                 res.should.have.status(400);
                                 done();
                             });

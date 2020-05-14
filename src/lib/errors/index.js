@@ -19,10 +19,10 @@ export const errorHandler = (err, req, res, next) => {
             Log.err(`Client Message: ${err.message}`);
             Log.err(`Server Message: ${err.internalError}`);
         }
+        res.status(400).send();
     } else {
         // TODO: proper logging here
-        console.error(err);
+        res.status(err.status).send();
+        // console.error(err);
     }
-
-    res.status(400).send();
 };
