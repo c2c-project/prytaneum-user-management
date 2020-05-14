@@ -1,3 +1,4 @@
 {
-    "reporter": ["html"]
+    "reporter": ["html"],
+    "extends": "@istanbuljs/nyc-config-babel"
 }

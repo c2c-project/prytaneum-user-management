@@ -20,12 +20,13 @@ describe('users', function () {
     let jwt;
 
     before(async function () {
-        await Accounts.register(
+        const { _id } = await Accounts.register(
             mockUser.username,
             mockUser.password,
             mockUser.password,
             { email: mockUser.email }
         );
+        mockUser._id = _id;
     });
 
     after(async function () {
@@ -77,6 +78,9 @@ describe('users', function () {
         });
     });
     describe('#register', function () {
+        after(async function () {
+            await Users.removeUser('blah@blah.com');
+        });
         it('should register a user', function (done) {
             chai.request(server)
                 .post('/api/users/register')
@@ -129,17 +133,15 @@ describe('users', function () {
                 });
         });
         it('should accept a valid userId', function (done) {
-            Users.findByEmail(mockUser.email).then((doc) => {
-                const { _id } = doc;
-                chai.request(server)
-                    .post('/api/users/verification')
-                    .send({ userId: _id })
-                    .end(function (err, res) {
-                        (err === null).should.be.true;
-                        res.should.have.status(200);
-                        done();
-                    });
-            });
+            const { _id } = mockUser;
+            chai.request(server)
+                .post('/api/users/verification')
+                .send({ userId: _id })
+                .end(function (err, res) {
+                    (err === null).should.be.true;
+                    res.should.have.status(200);
+                    done();
+                });
         });
     });
     describe('#request-password-reset', function () {
@@ -176,35 +178,28 @@ describe('users', function () {
     });
     describe('#consume-password-reset-token', function () {
         it('should accept valid token', function (done) {
-            Users.findByEmail(mockUser.email)
-                .then((doc) => {
-                    const { _id } = doc;
-                    JWT.sign(
-                        { _id },
-                        process.env.JWT_SECRET,
-                        { expiresIn: '2m' },
-                        (err, token) => {
-                            chai.request(server)
-                                .post('/api/users/consume-password-reset-token')
-                                .send({
-                                    token,
-                                    form: {
-                                        password: '1',
-                                        confirmPassword: '1',
-                                    },
-                                })
-                                .end(function (innerErr, res) {
-                                    (innerErr === null).should.be.true;
-                                    res.should.have.status(200);
-                                    done();
-                                });
-                        }
-                    );
-                })
-                .catch((err) => {
-                    (err === null).should.be.true;
-                    done();
-                });
+            const { _id } = mockUser;
+            JWT.sign(
+                { _id },
+                process.env.JWT_SECRET,
+                { expiresIn: '2m' },
+                (err, token) => {
+                    chai.request(server)
+                        .post('/api/users/consume-password-reset-token')
+                        .send({
+                            token,
+                            form: {
+                                password: '1',
+                                confirmPassword: '1',
+                            },
+                        })
+                        .end(function (innerErr, res) {
+                            (innerErr === null).should.be.true;
+                            res.should.have.status(200);
+                            done();
+                        });
+                }
+            );
         });
         it('should reject invalid token', function (done) {
             chai.request(server)
@@ -221,58 +216,54 @@ describe('users', function () {
                 });
         });
         it('should reject expired token', function (done) {
-            Users.findByEmail(mockUser.email).then((doc) => {
-                const { _id } = doc;
-                JWT.sign(
-                    { _id },
-                    process.env.JWT_SECRET,
-                    { expiresIn: '1s' },
-                    (err, token) => {
-                        (err === null).should.be.true;
-                        setTimeout(function () {
-                            return chai
-                                .request(server)
-                                .post('/api/users/consume-password-reset-token')
-                                .send({
-                                    token,
-                                    form: {
-                                        password: '1',
-                                        confirmPassword: '1',
-                                    },
-                                })
-                                .end(function (innerErr, res) {
-                                    (innerErr === null).should.be.true;
-                                    res.should.have.status(400);
-                                    done();
-                                });
-                        }, 1500);
-                    }
-                );
-            });
-        });
-        it('should reject mismatching password', function (done) {
-            Users.findByEmail(mockUser.email).then((doc) => {
-                const { _id } = doc;
-                JWT.sign(
-                    { _id },
-                    process.env.JWT_SECRET,
-                    { expiresIn: '2m' },
-                    (err, token) => {
-                        (err === null).should.be.true;
-                        chai.request(server)
+            const { _id } = mockUser;
+            JWT.sign(
+                { _id },
+                process.env.JWT_SECRET,
+                { expiresIn: '1s' },
+                (err, token) => {
+                    (err === null).should.be.true;
+                    setTimeout(function () {
+                        return chai
+                            .request(server)
                             .post('/api/users/consume-password-reset-token')
                             .send({
                                 token,
-                                form: { password: '1', confirmPassword: '2' },
+                                form: {
+                                    password: '1',
+                                    confirmPassword: '1',
+                                },
                             })
                             .end(function (innerErr, res) {
                                 (innerErr === null).should.be.true;
                                 res.should.have.status(400);
                                 done();
                             });
-                    }
-                );
-            });
+                    }, 1500);
+                }
+            );
+        });
+        it('should reject mismatching password', function (done) {
+            const { _id } = mockUser;
+            JWT.sign(
+                { _id },
+                process.env.JWT_SECRET,
+                { expiresIn: '2m' },
+                (err, token) => {
+                    (err === null).should.be.true;
+                    chai.request(server)
+                        .post('/api/users/consume-password-reset-token')
+                        .send({
+                            token,
+                            form: { password: '1', confirmPassword: '2' },
+                        })
+                        .end(function (innerErr, res) {
+                            (innerErr === null).should.be.true;
+                            res.should.have.status(400);
+                            done();
+                        });
+                }
+            );
         });
     });
 });

@@ -2,7 +2,6 @@ import ClientError from './client';
 import Log from '../log';
 
 export { default as ClientError } from './client';
-export { default as ServerError } from './server';
 /**
  * @arg err the error to handle
  * @arg res the response object
@@ -22,7 +21,9 @@ export const errorHandler = (err, req, res, next) => {
         res.status(400).send();
     } else {
         // TODO: proper logging here
-        res.status(err.status).send();
+        // if there is no status attached, then an internal error occured, hence 500
+        const status = err.status || 500; 
+        res.status(status).send();
         // console.error(err);
     }
 };
