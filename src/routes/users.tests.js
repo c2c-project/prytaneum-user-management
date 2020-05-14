@@ -4,6 +4,7 @@ import JWT from 'jsonwebtoken';
 import { ObjectID } from 'mongodb';
 import server from '../app';
 import Users from '../db/users';
+import Accounts from '../lib/accounts';
 
 chai.should();
 chai.use(chaihttp);
@@ -18,12 +19,16 @@ describe('users', function () {
     let jwt;
 
     before(async function () {
-        const { _id } = await Users.addUser(mockUser);
-        mockUser._id = _id;
+        await Accounts.register(
+            mockUser.username,
+            mockUser.password,
+            mockUser.password,
+            { email: mockUser.email }
+        );
     });
 
     after(async function () {
-        await Users.removeUser(mockUser._id);
+        await Users.removeUser(mockUser.email);
     });
 
     describe('#login', function () {

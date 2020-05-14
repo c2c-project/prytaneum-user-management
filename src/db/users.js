@@ -13,8 +13,8 @@ Users.prototype.updateUser = function (doc, addition) {
     return this.collection.updateOne(doc, addition);
 };
 
-Users.prototype.removeUser = function (_id) {
-    return this.collection.deleteOne({ _id: new ObjectID(_id) });
+Users.prototype.removeUser = function (email) {
+    return this.collection.deleteOne({ email });
 };
 
 Users.prototype.findByUsername = function ({ username }) {
@@ -39,7 +39,7 @@ Users.prototype.findByEmail = function (email) {
 };
 
 Users.prototype.find = async function (...args) {
-    this.collection.find(...args).toArray();
+    return this.collection.find(...args).toArray();
 };
 
 export default new Users();
