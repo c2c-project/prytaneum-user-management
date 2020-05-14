@@ -7,10 +7,10 @@ jobs:
         - image: circleci/node:latest
         - image: circleci/mongo:latest
     steps:
+        - checkout
         - run:
             name: Setup Env Vars
             command: cat .env.example >> $BASH_ENV
-        - checkout
         - restore_cache:
             key: dependency-cache-{{ checksum "yarn.lock" }}
         - run:
