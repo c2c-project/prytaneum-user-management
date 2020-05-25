@@ -10,11 +10,10 @@ dotenv.config();
 function initApp() {
     const app = express();
     config(app);
-
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === 'test') {
         app.get('/', (req, res) => res.sendStatus(200));
     }
-    app.use('/api/users', userRoutes);
+    app.use('/api/auth', userRoutes);
     app.use((req, res, next) => {
         next(createError(404));
     });

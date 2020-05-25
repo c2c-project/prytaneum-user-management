@@ -12,9 +12,9 @@ export { default as ClientError } from './client';
 export const errorHandler = (err, req, res, next) => {
     if (err instanceof ClientError) {
         res.statusMessage = err.message;
-
+        const { NODE_ENV } = process.env;
         // TODO: log internal error here
-        if (process.env.NODE_ENV === 'development') {
+        if (NODE_ENV === 'development') {
             Log.err(`Client Message: ${err.message}`);
             Log.err(`Server Message: ${err.internalError}`);
         }
@@ -22,7 +22,7 @@ export const errorHandler = (err, req, res, next) => {
     } else {
         // TODO: proper logging here
         // if there is no status attached, then an internal error occured, hence 500
-        const status = err.status || 500; 
+        const status = err.status || 500;
         res.status(status).send();
         // console.error(err);
     }

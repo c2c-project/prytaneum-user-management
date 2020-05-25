@@ -9,12 +9,12 @@ const router = express.Router();
 
 router.post('/register', async (req, res, next) => {
     const { form } = req.body;
-    const { username, email, password, confirmPass } = form;
+    const { username, email, password, confirmPassword } = form;
     try {
         const { _id } = await Accounts.register(
             username,
             password,
-            confirmPass,
+            confirmPassword,
             {
                 email,
             }
@@ -78,7 +78,7 @@ router.post(
     }
 );
 
-router.post('/verification', async (req, res, next) => {
+router.post('/confirm/user-email', async (req, res, next) => {
     const { userId } = req.body;
     // we want to wait for this before sending a success message
     try {

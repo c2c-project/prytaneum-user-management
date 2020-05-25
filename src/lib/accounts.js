@@ -51,7 +51,7 @@ const isAllowed = async (
  * @throws {ClientError} The user navigated to an invalid link
  * @returns {Promise} MongoDB Cursor Promise
  */
-const verifyUser = async (userId) => {
+const confirmUserEmail = async (userId) => {
     const doc = await Users.findByUserId(userId);
 
     if (doc) {
@@ -206,7 +206,7 @@ export default {
     isAllowed,
     filterSensitiveData,
     isOwner,
-    verifyUser,
+    verifyUser: confirmUserEmail,
     sendPasswordResetEmail,
     updatePassword,
 };

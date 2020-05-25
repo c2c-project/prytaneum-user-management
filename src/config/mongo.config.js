@@ -9,7 +9,7 @@ const client = new MongoClient(DB_URL, { useUnifiedTopology: true });
 const connected = client.connect().then((connection) => connection.db(dbName));
 
 export default function MongoCollection(name) {
-    connected.then((db) => {
+    return connected.then((db) => {
         this.collection = db.collection(name);
     });
 }

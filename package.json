@@ -5,14 +5,16 @@
     "license": "MIT",
     "scripts": {
         "start": "nodemon --exec babel-node src/bin/www.js",
-        "test": "nyc mocha \"**/*.tests.js\""
+        "test": "jest --watchAll --runInBand --detectOpenHandles"
     },
     "dependencies": {
         "@babel/runtime": "^7.9.6",
         "bcrypt": "^4.0.1",
         "cookie-parser": "^1.4.5",
         "dotenv": "^8.2.0",
+        "eslint-plugin-jest": "^23.13.1",
         "express": "^4.17.1",
+        "helmet": "^3.22.0",
         "http-errors": "^1.7.3",
         "jsonwebtoken": "^8.5.1",
         "mongodb": "^3.5.7",
@@ -28,20 +30,15 @@
         "@babel/plugin-transform-runtime": "^7.9.6",
         "@babel/preset-env": "^7.9.6",
         "@babel/register": "^7.9.0",
-        "@istanbuljs/nyc-config-babel": "^3.0.0",
-        "babel-plugin-istanbul": "^6.0.0",
-        "chai": "^4.2.0",
-        "chai-http": "^4.3.0",
+        "@shelf/jest-mongodb": "^1.1.5",
+        "@types/jest": "^25.2.3",
         "eslint": "^6.5.1",
-        "eslint-config-airbnb": "^18.0.1",
+        "eslint-config-airbnb-base": "^14.1.0",
         "eslint-config-prettier": "^6.4.0",
-        "eslint-plugin-flowtype": "^4.5.2",
         "eslint-plugin-import": "^2.18.2",
-        "eslint-plugin-jsx-a11y": "^6.2.3",
-        "eslint-plugin-react": "^7.16.0",
-        "eslint-plugin-react-hooks": "^2.1.2",
+        "jest": "^26.0.1",
         "jsdoc": "^3.6.4",
-        "mocha": "^7.1.2",
-        "nyc": "^15.0.1"
+        "superagent": "^5.2.2",
+        "supertest": "^4.0.2"
     }
 }
