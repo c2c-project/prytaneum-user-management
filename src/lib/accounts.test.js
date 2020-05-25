@@ -1,4 +1,14 @@
 import Accounts from './accounts';
+import Mongo from '../config/mongo.config';
+import connect from '../db/connect';
+
+beforeAll(async () => {
+    await connect();
+});
+
+afterAll(async () => {
+    await Mongo.close();
+});
 
 describe('Accounts', () => {
     describe('#isAllowed()', () => {
@@ -39,6 +49,20 @@ describe('Accounts', () => {
             expect(value1).toStrictEqual(false);
             expect(value2).toStrictEqual(false);
             expect(value3).toStrictEqual(false);
+        });
+        it('should reject with no args', async () => {
+            const value = await Accounts.isAllowed();
+            expect(value).toStrictEqual(false);
+        });
+    });
+    describe('#isOwner()', () => {
+        it('should return true', async () => {
+            const result = await Accounts.isOwner('1', { userId: '1' });
+            expect(result).toBeTruthy();
+        });
+        it('should return false', async () => {
+            const result = await Accounts.isOwner('2', { userId: '1' });
+            expect(result).toBeFalsy();
         });
     });
 });

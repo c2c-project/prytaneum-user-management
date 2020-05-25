@@ -1,27 +1,28 @@
 import { ObjectID } from 'mongodb';
 import Mongo from '../config/mongo.config';
 
-const Users = function () {
-    this.connectionStatus = Mongo.call(this, 'users');
+const Users = function () {};
+
+Users.prototype.init = async function () {
+    if (!this.initialed) {
+        this.initialized = true;
+        this.collection = await Mongo.collection('users');
+    }
 };
 
 Users.prototype.addUser = async function (userDoc) {
-    await this.connectionStatus;
     return this.collection.insertOne(userDoc).then((r) => r.ops[0]);
 };
 
 Users.prototype.updateUser = async function (doc, addition) {
-    await this.connectionStatus;
     return this.collection.updateOne(doc, addition);
 };
 
 Users.prototype.removeUser = async function (email) {
-    await this.connectionStatus;
     return this.collection.deleteOne({ email });
 };
 
 Users.prototype.findByUsername = async function ({ username }) {
-    await this.connectionStatus;
     return this.collection
         .find({ username })
         .toArray()
@@ -29,7 +30,6 @@ Users.prototype.findByUsername = async function ({ username }) {
 };
 
 Users.prototype.findByUserId = async function (userId) {
-    await this.connectionStatus;
     return this.collection
         .find({ _id: new ObjectID(userId) })
         .toArray()
@@ -37,7 +37,6 @@ Users.prototype.findByUserId = async function (userId) {
 };
 
 Users.prototype.findByEmail = async function (email) {
-    await this.connectionStatus;
     return this.collection
         .find({ email })
         .toArray()
@@ -45,7 +44,6 @@ Users.prototype.findByEmail = async function (email) {
 };
 
 Users.prototype.find = async function (...args) {
-    await this.connectionStatus;
     return this.collection.find(...args).toArray();
 };
 

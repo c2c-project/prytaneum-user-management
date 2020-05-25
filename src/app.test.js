@@ -1,6 +1,16 @@
 import request from 'supertest';
 
 import app, { _test } from './app';
+import connect from './db/connect';
+import Mongo from './config/mongo.config';
+
+beforeAll(async () => {
+    connect();
+});
+
+afterAll(async () => {
+    Mongo.close();
+});
 
 describe('App', function () {
     it('should respond with 200', async () => {

@@ -14,10 +14,12 @@ export const errorHandler = (err, req, res, next) => {
         res.statusMessage = err.message;
         const { NODE_ENV } = process.env;
         // TODO: log internal error here
-        if (NODE_ENV === 'development') {
-            Log.err(`Client Message: ${err.message}`);
-            Log.err(`Server Message: ${err.internalError}`);
-        }
+
+        // if (NODE_ENV === 'development' || NODE_ENV === 'test') {
+            // Log.err(`Client Message: ${err.message}`);
+            // Log.err(`Server Message: ${err.internalError}`);
+        // }
+        
         res.status(400).send();
     } else {
         // TODO: proper logging here

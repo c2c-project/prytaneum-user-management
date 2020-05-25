@@ -5,11 +5,23 @@ require('dotenv').config();
 const { DB_URL } = process.env;
 const dbName = 'prytaneum-auth';
 
-const client = new MongoClient(DB_URL, { useUnifiedTopology: true });
-const connected = client.connect().then((connection) => connection.db(dbName));
+export default (function () {
+    const client = new MongoClient(DB_URL, { useUnifiedTopology: true });
+    const connect = () =>
+        client.connect().then((connection) => connection.db(dbName));
 
-export default function MongoCollection(name) {
-    return connected.then((db) => {
-        this.collection = db.collection(name);
-    });
-}
+    let connection;
+
+    return {
+        init() {
+            connection = connect();
+            return connection;
+        },
+        collection(name) {
+            return connection.then((db) => db.collection(name));
+        },
+        close() {
+            return client.close();
+        },
+    };
+})();

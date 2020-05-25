@@ -8,9 +8,9 @@ import { ClientError } from '../lib/errors';
 const router = express.Router();
 
 router.post('/register', async (req, res, next) => {
-    const { form } = req.body;
-    const { username, email, password, confirmPassword } = form;
     try {
+        const { form } = req.body;
+        const { username, email, password, confirmPassword } = form;
         const { _id } = await Accounts.register(
             username,
             password,
@@ -31,8 +31,8 @@ router.post(
     '/login',
     passport.authenticate('login', { session: false }),
     async (req, res, next) => {
-        const { user } = req;
         try {
+            const { user } = req;
             const clientUser = await Accounts.filterSensitiveData(user);
             const token = await jwt.sign(
                 clientUser,
@@ -49,12 +49,12 @@ router.post(
 // NOTE: unprotected route here
 // TODO: rate limit this
 router.post('/login-temporary', async (req, res, next) => {
-    const { username } = req.body;
     try {
+        const { username } = req.body;
         const userDoc = await Accounts.registerTemporary(username, {
             roles: ['user'],
         });
-        const token = jwt.sign(userDoc, process.env.JWT_SECRET, {});
+        const token = await jwt.sign(userDoc, process.env.JWT_SECRET, {});
         res.status(200).send({ jwt: token });
     } catch (e) {
         next(e);
@@ -79,9 +79,9 @@ router.post(
 );
 
 router.post('/confirm/user-email', async (req, res, next) => {
-    const { userId } = req.body;
     // we want to wait for this before sending a success message
     try {
+        const { userId } = req.body;
         await Accounts.verifyUser(userId);
         res.status(200).send();
     } catch (e) {
@@ -105,41 +105,25 @@ router.post('/request-password-reset', async (req, res, next) => {
 
 // Call to update to new password
 router.post('/consume-password-reset-token', async (req, res, next) => {
-    const { token, form } = req.body;
-    const { password, confirmPassword } = form;
-    if (
-        token !== undefined &&
-        password !== undefined &&
-        confirmPassword !== undefined
-    ) {
-        try {
-            const decodedJwt = await jwt.verify(token, process.env.JWT_SECRET);
-            await Accounts.updatePassword(
-                decodedJwt,
-                form.password,
-                form.confirmPassword
-            );
-            res.status(200).send('Password Reset');
-        } catch (e) {
-            if (e instanceof ClientError) {
-                next(e);
+    try {
+        const { token, form } = req.body;
+        const { password, confirmPassword } = form;
+
+        const decodedJwt = await jwt.verify(token, process.env.JWT_SECRET);
+        await Accounts.updatePassword(decodedJwt, password, confirmPassword);
+
+        res.status(200).send('Password Reset');
+    } catch (e) {
+        if (e instanceof ClientError) {
+            next(e);
+        } else {
+            const { message } = e;
+            if (message === 'jwt expired') {
+                next(new ClientError('Expired Link'));
             } else {
-                const { message } = e;
-                if (message === 'jwt expired') {
-                    next(new ClientError('Expired Link'));
-                } else {
-                    next(new ClientError('Invalid Link'));
-                }
+                next(new ClientError('Invalid Link'));
             }
         }
-    } else {
-        let errorText = '';
-        if (token === undefined) {
-            errorText = 'Token Missing';
-        } else if (password === undefined || confirmPassword === undefined) {
-            errorText = 'Invalid Password';
-        }
-        next(new ClientError(errorText));
     }
 });
 
