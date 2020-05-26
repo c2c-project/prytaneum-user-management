@@ -5,7 +5,8 @@
     "license": "MIT",
     "scripts": {
         "start": "nodemon --exec babel-node src/bin/www.js",
-        "test": "jest --watchAll --runInBand"
+        "test": "jest --watchAll --runInBand",
+        "test:ci": "jest"
     },
     "dependencies": {
         "@babel/runtime": "^7.9.6",
