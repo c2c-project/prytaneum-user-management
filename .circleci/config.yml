@@ -20,7 +20,7 @@ jobs:
             key: dependency-cache-{{ checksum "yarn.lock" }}
             paths:
                 - node_modules
-        - run: yarn test
+        - run: yarn test:ci
 workflows:
     build-and-test:
       jobs:
