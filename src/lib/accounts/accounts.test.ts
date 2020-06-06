@@ -1,6 +1,7 @@
+import Mongo from 'config/mongo.config';
+import connect from 'db/connect';
+
 import Accounts from './accounts';
-import Mongo from '../config/mongo.config';
-import connect from '../db/connect';
 
 beforeAll(async () => {
     await connect();

@@ -13,6 +13,7 @@ const mockUser = {
     password: '1',
     email: '__test__@__test__.com',
     userRoles: ['user'],
+    _id: null,
 };
 
 beforeAll(async () => {
@@ -21,7 +22,9 @@ beforeAll(async () => {
         mockUser.username,
         mockUser.password,
         mockUser.password,
-        { email: mockUser.email }
+        {
+            email: mockUser.email,
+        }
     );
     mockUser._id = _id;
 });
@@ -31,7 +34,7 @@ afterAll(async () => {
 });
 
 describe('users', () => {
-    let _jwt;
+    let _jwt: string;
 
     describe('#login', () => {
         it('should reject the login with no username or password', async () => {
@@ -87,11 +90,12 @@ describe('users', () => {
             await Users.collection.deleteOne({ username: 'fake@fake.com' });
         });
         it('should fail to login as existing user', async () => {
-            const { status, jwt: token } = await request(app)
+            const { status, body } = await request(app)
                 .post('/api/auth/login-temporary')
                 .send({
                     username: mockUser.username,
                 });
+            const { jwt: token } = body;
             expect(status).toStrictEqual(400);
             expect(token).toBeFalsy();
         });

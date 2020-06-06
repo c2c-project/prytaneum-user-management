@@ -13,6 +13,6 @@ afterAll(async () => {
 describe('user collection tests', () => {
     it('init should fail since it has already been called', async () => {
         expect(Users.initialized).toStrictEqual(true);
-        Users.init()
+        await Users.init();
     });
 });

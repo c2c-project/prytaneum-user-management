@@ -4,12 +4,14 @@
     "main": "index.js",
     "license": "MIT",
     "scripts": {
-        "start": "nodemon --exec babel-node src/bin/www.js",
+        "start": "nodemon -e ts,js,json --exec \"babel-node -x \".ts\" src/bin/www.ts\"",
         "test": "jest --watchAll --runInBand",
-        "test:ci": "jest"
+        "test:ci": "jest",
+        "build:types": "tsc --emitDeclarationOnly"
     },
     "dependencies": {
         "@babel/runtime": "^7.9.6",
+        "@typescript-eslint/parser": "^3.1.0",
         "bcrypt": "^4.0.1",
         "cookie-parser": "^1.4.5",
         "dotenv": "^8.2.0",
@@ -26,19 +28,35 @@
         "passport-local": "^1.0.0"
     },
     "devDependencies": {
+        "@babel/cli": "^7.10.1",
         "@babel/core": "^7.9.6",
         "@babel/node": "^7.8.7",
+        "@babel/plugin-proposal-class-properties": "^7.10.1",
         "@babel/plugin-transform-runtime": "^7.9.6",
         "@babel/preset-env": "^7.9.6",
+        "@babel/preset-typescript": "^7.10.1",
         "@babel/register": "^7.9.0",
+        "@types/bcrypt": "^3.0.0",
+        "@types/cookie-parser": "^1.4.2",
+        "@types/express": "^4.17.6",
+        "@types/http-errors": "^1.6.3",
         "@types/jest": "^25.2.3",
+        "@types/mongodb": "^3.5.20",
+        "@types/morgan": "^1.9.0",
+        "@types/passport": "^1.0.3",
+        "@types/passport-jwt": "^3.0.3",
+        "@types/passport-local": "^1.0.33",
+        "@types/supertest": "^2.0.9",
+        "@typescript-eslint/eslint-plugin": "^3.1.0",
         "eslint": "^6.5.1",
         "eslint-config-airbnb-base": "^14.1.0",
+        "eslint-config-airbnb-typescript": "^8.0.2",
         "eslint-config-prettier": "^6.4.0",
         "eslint-plugin-import": "^2.18.2",
         "jest": "^26.0.1",
         "jsdoc": "^3.6.4",
         "superagent": "^5.2.2",
-        "supertest": "^4.0.2"
+        "supertest": "^4.0.2",
+        "typescript": "^3.9.5"
     }
 }

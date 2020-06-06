@@ -1,14 +1,24 @@
 module.exports = {
     // parser: 'babel-eslint',
     //meteorjs/eslint-config-meteor uses airbnb
-    extends: ['airbnb-base', 'prettier', 'plugin:jest/recommended'],
+    extends: [
+        'airbnb-typescript/base',
+        'prettier',
+        'plugin:@typescript-eslint/recommended',
+        'plugin:@typescript-eslint/recommended-requiring-type-checking',
+        'plugin:jest/recommended',
+    ],
+    parserOptions: {
+        project: './tsconfig.json',
+    },
     rules: {
         quotes: ['error', 'single'],
-        indent: ['error', 4, { SwitchCase: 1 }],
+        indent: 'off',
+        '@typescript-eslint/indent': ['error', 4, { SwitchCase: 1 }],
         'jsx-quotes': ['error', 'prefer-single'],
         'import/no-extraneous-dependencies': [
             'error',
-            { devDependencies: ['**/*.test.js', '**/*.stories.*'] },
+            { devDependencies: ['**/*.test.*', '**/*.stories.*'] },
         ],
         'import/no-absolute-path': 0,
         'no-underscore-dangle': 'off',

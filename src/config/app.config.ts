@@ -1,10 +1,10 @@
 import cookieParser from 'cookie-parser';
 import logger from 'morgan';
-import express from 'express';
+import express, { Express } from 'express';
 import passport from 'passport';
 import './passport.config';
 
-export default function (app) {
+export default function (app: Express): void {
     // TODO: make this dev or prod mode
     app.use(logger('dev'));
     app.use(express.json());

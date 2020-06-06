@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Express } from 'express';
 import dotenv from 'dotenv';
 import createError from 'http-errors';
 import config from './config/app.config';
@@ -7,7 +7,7 @@ import { errorHandler } from './lib/errors';
 
 dotenv.config();
 
-function initApp() {
+function initApp(): Express {
     const app = express();
     config(app);
     if (process.env.NODE_ENV === 'test') {
@@ -23,6 +23,7 @@ function initApp() {
 
 export default initApp();
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const _test = {
     initApp,
 };

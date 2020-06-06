@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/indent */
 import bcrypt from 'bcrypt';
-import jwt from './jwt';
-import Users from '../db/users';
-import { ClientError } from './errors';
-import Emails from './email';
+
+import Users, { whitelist, ClientSafeUserDoc, DBUser } from 'db/users';
+import jwt from '../jwt';
+import { ClientError } from '../errors';
+import Emails from '../email';
 
 const SALT_ROUNDS = 10;
 const BASE_USER = {
@@ -16,9 +18,17 @@ const BASE_USER = {
  * @returns {Promise} evalutes to a boolean
  */
 const isAllowed = async (
-    userRoles = [],
-    { requiredAll = [], requiredAny = [], requiredNot = [] } = {}
-) => {
+    userRoles: Array<string> = [],
+    {
+        requiredAll = [],
+        requiredAny = [],
+        requiredNot = [],
+    }: {
+        requiredAll?: string[];
+        requiredAny?: string[];
+        requiredNot?: string[];
+    } = {}
+): Promise<boolean> => {
     if (userRoles.length === 0) {
         return false;
     }
@@ -51,7 +61,7 @@ const isAllowed = async (
  * @throws {ClientError} The user navigated to an invalid link
  * @returns {Promise} MongoDB Cursor Promise
  */
-const confirmUserEmail = async (userId) => {
+const confirmUserEmail = async (userId: string): Promise<any> => {
     const doc = await Users.findByUserId(userId);
 
     if (doc) {
@@ -68,7 +78,7 @@ const confirmUserEmail = async (userId) => {
  * @returns {Promise} evaluates to the email sent
  * @throws {ClientError} Invalid Email or error with signing jwt
  */
-const sendPasswordResetEmail = async (email) => {
+const sendPasswordResetEmail = async (email: string): Promise<any> => {
     const doc = await Users.findByEmail(email);
     if (doc) {
         // Filter doc
@@ -83,13 +93,17 @@ const sendPasswordResetEmail = async (email) => {
 
 /**
  * @description Function to reset user's password in database
- * @param {string} decodedJwt user jwt that is decoded
+ * @param {object} decodedJwt user jwt that is decoded
  * @param {string} password new password
  * @param {string} confirmPassword new password confirmation
  * @returns {Promise} resolves to a MongoDB cursor on success
  * @throws {ClientError} Passwords do Not Match, Invalid Link, Expired Link
  */
-const updatePassword = async (decodedJwt, password, confirmPassword) => {
+const updatePassword = async (
+    decodedJwt: { _id: string },
+    password: string,
+    confirmPassword: string
+): Promise<any> => {
     const { _id } = decodedJwt;
     // Find user in database then hash and update with new password
     if (password === confirmPassword) {
@@ -108,17 +122,19 @@ const updatePassword = async (decodedJwt, password, confirmPassword) => {
  * @description register the user in the database ONLY
  * @arg {string} username
  * @arg {string} password
- * @arg {string} confirmpass
- * @arg {string} [additionalFields] optional argument with additional fields to register the user with
+ * @arg {string} confirmPass
+ * @arg {object} [additionalFields] optional argument with additional fields to register the user with
  * @returns {Promise} userDoc with db _id field
  * @throws {ClientError} Username or email already exists, Passwords do not match
  */
 const register = async (
-    username,
-    password,
-    confirmPass,
-    additionalFields = {}
-) => {
+    username: string,
+    password: string,
+    confirmPass: string,
+    additionalFields: {
+        email?: string;
+    } = {}
+): Promise<any> => {
     const { email } = additionalFields;
 
     // if the user registered with an email & username, then find by username or email
@@ -152,7 +168,10 @@ const register = async (
  * @returns {Promise} resolves to a MongoDB cursor
  * @throws {ClientError} Username already exists
  */
-const registerTemporary = async (username, additionalFields = {}) => {
+const registerTemporary = async (
+    username: string,
+    additionalFields = {}
+): Promise<any> => {
     const doc = await Users.findByUsername({ username });
     // if username does not already exist
     if (!doc) {
@@ -168,34 +187,31 @@ const registerTemporary = async (username, additionalFields = {}) => {
 // TODO: figure out where this should belong
 /**
  * @description filters the sensitive data using whitelist methodology
- * @arg {Object} userDoc target to filter
- * @returns {Promise} resolves to the userDoc with ONLY whitelisted fields
+ * @arg {DBUser} userDoc target to filter
+ * @returns {ClientSafeUserDoc} resolves to the userDoc with ONLY whitelisted fields
  */
-const filterSensitiveData = async (userDoc) => {
-    // okay fields to send to client via jwt or any given time
-    const okayFields = [
-        '_id',
-        'email',
-        'username',
-        'roles',
-        'name',
-        'verified',
-    ];
-    return Object.entries(userDoc).reduce((accum, [key, value]) => {
-        if (okayFields.includes(key)) {
+const filterSensitiveData = (userDoc: DBUser): ClientSafeUserDoc => {
+    type Entry = [keyof DBUser, unknown];
+    function reducer(
+        accum: Partial<DBUser>,
+        [key, value]: Entry
+    ): Partial<ClientSafeUserDoc> {
+        if (whitelist.includes(key)) {
             return { ...accum, [key]: value };
         }
         return accum;
-    }, {});
+    }
+    const entries: Entry[] = Object.entries<DBUser>(userDoc);
+    return Object.entries(userDoc).reduce(reducer, {});
 };
 
 /**
  * @description determines if the userId owns the document
- * @arg {String} userId
- * @arg {Object} doc
- * @returns {Boolean} whether or not the user is the owner of a particular document
+ * @arg {string} userId
+ * @arg {object} doc
+ * @returns {boolean} whether or not the user is the owner of a particular document
  */
-const isOwner = async (userId = {}, doc = '') => {
+const isOwner = (userId: '', doc: { userId?: string } = {}): boolean => {
     return doc.userId === String(userId);
 };
 
