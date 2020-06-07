@@ -1,8 +1,11 @@
 import request from 'supertest';
 
-import app, { _test } from './app';
-import connect from './db/connect';
-import Mongo from './config/mongo.config';
+import { _test as EnvTest } from 'config/env';
+import app, { _test as AppTest } from 'app';
+import connect from 'db/connect';
+import Mongo from 'config/mongo';
+
+const { env } = EnvTest;
 
 beforeAll(async () => {
     await connect();
@@ -22,11 +25,11 @@ describe('App', function () {
         expect(status).toStrictEqual(404);
     });
     it('should respond with a 404 in prod', async () => {
-        const cachedEnv = process.env.NODE_ENV;
-        process.env.NODE_ENV = 'production';
-        const testApp = _test.initApp();
+        const cachedEnv = env.NODE_ENV;
+        env.NODE_ENV = 'production';
+        const testApp = AppTest.initApp();
         const { status } = await request(testApp).get('/');
         expect(status).toStrictEqual(404);
-        process.env.NODE_ENV = cachedEnv;
+        env.NODE_ENV = cachedEnv;
     });
 });

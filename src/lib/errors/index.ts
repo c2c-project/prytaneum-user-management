@@ -1,6 +1,8 @@
 import { Response, Request, NextFunction } from 'express';
+
+import env from 'config/env';
 import ClientError from './client';
-import Log from '../log';
+import Log from '../logger/log';
 
 export { default as ClientError } from './client';
 /**
@@ -11,14 +13,14 @@ export { default as ClientError } from './client';
  * NOTE: sends the response
  */
 export const errorHandler = (
-    err: Error | ClientError,
+    err: Error & { status: number },
     req: Request<any>,
     res: Response<any>,
     next: NextFunction
 ): void => {
     if (err instanceof ClientError) {
         res.statusMessage = err.message;
-        const { NODE_ENV } = process.env;
+        const { NODE_ENV } = env;
         // TODO: log internal error here
 
         if (NODE_ENV === 'development' || NODE_ENV === 'test') {

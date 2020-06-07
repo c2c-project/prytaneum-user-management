@@ -1,5 +1,5 @@
 import Users from './users';
-import Mongo from '../config/mongo.config';
+import Mongo from '../config/mongo';
 
 beforeAll(async () => {
     await Mongo.init();

@@ -1,12 +1,15 @@
 import { ObjectID } from 'mongodb';
 import request from 'supertest';
 
-import app from '../app';
-import Users from '../db/users';
-import Accounts from '../lib/accounts';
-import jwt from '../lib/jwt';
-import connect from '../db/connect';
-import Mongo from '../config/mongo.config';
+import app from 'app';
+import Users from 'db/users';
+import Accounts from 'lib/accounts';
+import jwt from 'lib/jwt/jwt';
+import connect from 'db/connect';
+import Mongo from 'config/mongo';
+import { _test as EnvTest } from 'config/env';
+
+const { env } = EnvTest;
 
 const mockUser = {
     username: '__test__',
@@ -73,17 +76,17 @@ describe('users', () => {
             _jwt = body.jwt;
         });
         it('should catch if JWT_SECRET is undefined', async () => {
-            const cachedSecret = process.env.JWT_SECRET;
-            const cachedEnv = process.env.NODE_ENV;
-            delete process.env.JWT_SECRET;
-            delete process.env.NODE_ENV;
+            const cachedSecret = env.JWT_SECRET;
+            const cachedEnv = env.NODE_ENV;
+            delete env.JWT_SECRET;
+            delete env.NODE_ENV;
             const { status } = await request(app).post('/api/auth/login').send({
                 username: mockUser.username,
                 password: mockUser.password,
             });
             expect(status).toStrictEqual(500);
-            process.env.JWT_SECRET = cachedSecret;
-            process.env.NODE_ENV = cachedEnv;
+            env.JWT_SECRET = cachedSecret;
+            env.NODE_ENV = cachedEnv;
         });
     });
 

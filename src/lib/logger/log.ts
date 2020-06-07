@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+import env from 'config/env';
 
 /**
  * @description Logger type return description
@@ -11,35 +12,35 @@ interface Logger {
     info: (msg: string) => void;
     err: (msg: string) => void;
     print: (msg: string) => void;
+    warn: (msg: string) => void;
 }
 
 /**
  * @returns {Log} functions accesssing the logger
  */
 function Log(): Logger {
-    const { NODE_ENV } = process.env;
-    const emptyLogger = {
+    const { NODE_ENV } = env;
+    const emptyLogger: Logger = {
         info: () => {},
         err: () => {},
         print: () => {},
+        warn: () => {},
+    };
+    const consoleLogger: Logger = {
+        info: console.log,
+        err: console.error,
+        print: console.log,
+        warn: console.warn,
     };
     switch (NODE_ENV) {
         case 'production':
             return emptyLogger;
         case 'development':
-            return {
-                info: console.log,
-                err: console.error,
-                print: console.log,
-            };
+            return consoleLogger;
         case 'test':
             return emptyLogger;
         default:
-            return {
-                info: console.log,
-                err: console.error,
-                print: console.log,
-            };
+            return consoleLogger;
     }
 }
 

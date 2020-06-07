@@ -2,7 +2,9 @@ import cookieParser from 'cookie-parser';
 import logger from 'morgan';
 import express, { Express } from 'express';
 import passport from 'passport';
-import './passport.config';
+
+import './passport'; // intializes passport using our configuration
+import './env'; // initializes env vars using our configuration
 
 export default function (app: Express): void {
     // TODO: make this dev or prod mode

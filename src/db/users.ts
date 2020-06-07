@@ -6,7 +6,7 @@ import {
     FilterQuery,
     ObjectId,
 } from 'mongodb';
-import Mongo from '../config/mongo.config';
+import Mongo from '../config/mongo';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 export interface UserDoc extends Express.User {

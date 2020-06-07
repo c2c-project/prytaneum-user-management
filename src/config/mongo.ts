@@ -1,9 +1,7 @@
 import { MongoClient, Db, Collection } from 'mongodb';
-import dotenv from 'dotenv';
+import env from 'config/env';
 
-dotenv.config();
-
-const { DB_URL } = process.env;
+const { DB_URL } = env;
 const dbName = 'prytaneum-auth';
 
 export default (function () {

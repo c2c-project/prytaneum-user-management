@@ -3,7 +3,8 @@ import bcrypt from 'bcrypt';
 import { UpdateWriteOpResult, WithId } from 'mongodb';
 
 import Users, { whitelist, ClientSafeUserDoc, UserDoc } from 'db/users';
-import jwt from '../jwt';
+import env from 'config/env';
+import jwt from '../jwt/jwt';
 import { ClientError } from '../errors';
 import Emails from '../email';
 
@@ -89,7 +90,7 @@ const confirmUserEmail = async (
 // TODO: remove the any/unknown
 const sendPasswordResetEmail = async (email: string): Promise<unknown> => {
     const doc = await Users.findByEmail(email);
-    const { JWT_SECRET } = process.env;
+    const { JWT_SECRET } = env;
     const defaultSecret = 'secret';
     const secret = JWT_SECRET || defaultSecret;
     if (secret === defaultSecret) {

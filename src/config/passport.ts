@@ -2,7 +2,8 @@ import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
 import { Strategy as JWTStrategy, ExtractJwt } from 'passport-jwt';
 import Accounts from 'lib/accounts';
-import Users, { DBUser } from 'db/users';
+import Users, { UserDoc } from 'db/users';
+import env from 'config/env';
 
 passport.use(
     'login',
@@ -41,10 +42,10 @@ passport.use(
     'jwt',
     new JWTStrategy(
         {
-            secretOrKey: process.env.JWT_SECRET,
+            secretOrKey: env.JWT_SECRET,
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
         },
-        (jwtPayload: DBUser, done) => {
+        (jwtPayload: UserDoc & { _id: string }, done) => {
             async function verify() {
                 try {
                     const user = await Users.findByUserId(jwtPayload._id);

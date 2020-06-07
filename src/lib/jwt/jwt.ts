@@ -1,12 +1,15 @@
 import jwt from 'jsonwebtoken';
 
+import env, { defaults } from 'config/env';
+
 const getSecret = () => {
-    const secret = process.env.JWT_SECRET || 'secret';
-    const env = process.env.NODE_ENV || 'production';
-    if (env === 'production' && secret === 'secret') {
+    if (
+        env.NODE_ENV === 'production' &&
+        env.JWT_SECRET === defaults.JWT_SECRET
+    ) {
         throw new Error('JWT_SECRET IS SET INCORRECTLY IN PRODUCTION!');
     }
-    return secret;
+    return env.JWT_SECRET;
 };
 
 /**

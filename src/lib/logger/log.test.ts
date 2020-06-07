@@ -1,27 +1,30 @@
 /* eslint-disable no-console */
-import { _test } from './log';
+import { _test as TestEnv } from 'config/env';
+import { _test as TestLog } from './log';
 
-const { Log } = _test;
+const { Log } = TestLog;
+const { env } = TestEnv;
 
 let cachedEnv: 'test' | 'development' | 'production' | undefined;
 beforeAll(function () {
-    cachedEnv = process.env.NODE_ENV;
+    cachedEnv = env.NODE_ENV;
 });
 
 afterAll(function () {
-    process.env.NODE_ENV = cachedEnv;
+    env.NODE_ENV = cachedEnv;
 });
 
 describe('Log', function () {
     it('should use console in dev env', () => {
-        process.env.NODE_ENV = 'development';
+        env.NODE_ENV = 'development';
         const dLog = Log();
         expect(dLog.info).toStrictEqual(console.log);
         expect(dLog.err).toStrictEqual(console.error);
         expect(dLog.print).toStrictEqual(console.log);
+        expect(dLog.warn).toStrictEqual(console.warn);
     });
     it('should use nothing in prod', () => {
-        process.env.NODE_ENV = 'production';
+        env.NODE_ENV = 'production';
         const pLog = Log();
         expect(pLog.info('') === undefined).toStrictEqual(true);
         expect(pLog.err('') === undefined).toStrictEqual(true);
@@ -29,11 +32,12 @@ describe('Log', function () {
     });
 
     it('should default to development', () => {
-        process.env.NODE_ENV = undefined;
+        env.NODE_ENV = undefined;
         const dLog = Log();
         // console.log(dLog);
         expect(dLog.info).toStrictEqual(console.log);
         expect(dLog.err).toStrictEqual(console.error);
         expect(dLog.print).toStrictEqual(console.log);
+        expect(dLog.warn).toStrictEqual(console.warn);
     });
 });

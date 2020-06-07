@@ -1,7 +1,7 @@
 import express, { Request } from 'express';
 import passport from 'passport';
 
-import jwt from 'lib/jwt';
+import jwt from 'lib/jwt/jwt';
 import Accounts from 'lib/accounts';
 import Emails from 'lib/email';
 import { ClientError } from 'lib/errors';
