@@ -2,8 +2,8 @@ import express, { Express } from 'express';
 import createError from 'http-errors';
 import config from 'config/app';
 import env from 'config/env';
-import userRoutes from './routes/users';
-import { errorHandler } from './lib/errors';
+import userRoutes from 'routes/users';
+import { errorHandler } from 'lib/errors';
 
 function initApp(): Express {
     const app = express();

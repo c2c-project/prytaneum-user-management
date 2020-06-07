@@ -4,7 +4,7 @@
     "main": "index.js",
     "license": "MIT",
     "scripts": {
-        "start": "nodemon -e ts,js,json --exec \"babel-node -x \".ts\" src/bin/www.ts\"",
+        "start": "nodemon -e ts,js,json --exec \"babel-node -x \".ts\" src\"",
         "test": "jest --watchAll --runInBand",
         "test:ci": "jest",
         "build:types": "tsc --emitDeclarationOnly"

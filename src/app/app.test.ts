@@ -1,9 +1,9 @@
 import request from 'supertest';
 
 import { _test as EnvTest } from 'config/env';
-import app, { _test as AppTest } from 'app';
 import connect from 'db/connect';
 import Mongo from 'db/mongo';
+import app, { _test as AppTest } from './app';
 
 const { env } = EnvTest;
 
