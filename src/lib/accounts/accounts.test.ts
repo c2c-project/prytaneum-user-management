@@ -1,4 +1,4 @@
-import Mongo from 'config/mongo';
+import Mongo from 'db/mongo';
 import connect from 'db/connect';
 
 import Accounts from './accounts';

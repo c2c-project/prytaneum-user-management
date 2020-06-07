@@ -6,7 +6,7 @@ import Users from 'db/users';
 import Accounts from 'lib/accounts';
 import jwt from 'lib/jwt/jwt';
 import connect from 'db/connect';
-import Mongo from 'config/mongo';
+import Mongo from 'db/mongo';
 import { _test as EnvTest } from 'config/env';
 
 const { env } = EnvTest;
