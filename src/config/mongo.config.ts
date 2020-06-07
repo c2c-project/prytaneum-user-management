@@ -25,7 +25,7 @@ export default (function () {
                 throw new Error('Not connected to the db yet');
             }
             const db = await connection;
-            return db.collection(name);
+            return db.collection<T>(name);
             // return connection.then((db) => db.collection(name));
         },
         close() {

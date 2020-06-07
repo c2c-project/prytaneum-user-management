@@ -4,7 +4,9 @@
 
 export default class ClientError extends Error {
     internalError: string;
+
     name: string;
+
     constructor(clientMessage: string, serverMessage = '') {
         super(clientMessage);
         this.name = 'ClientError';

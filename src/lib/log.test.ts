@@ -3,7 +3,7 @@ import { _test } from './log';
 
 const { Log } = _test;
 
-let cachedEnv;
+let cachedEnv: 'test' | 'development' | 'production' | undefined;
 beforeAll(function () {
     cachedEnv = process.env.NODE_ENV;
 });
@@ -23,14 +23,15 @@ describe('Log', function () {
     it('should use nothing in prod', () => {
         process.env.NODE_ENV = 'production';
         const pLog = Log();
-        expect(pLog.info() === undefined).toStrictEqual(true);
-        expect(pLog.err() === undefined).toStrictEqual(true);
-        expect(pLog.print() === undefined).toStrictEqual(true);
+        expect(pLog.info('') === undefined).toStrictEqual(true);
+        expect(pLog.err('') === undefined).toStrictEqual(true);
+        expect(pLog.print('') === undefined).toStrictEqual(true);
     });
 
     it('should default to development', () => {
         process.env.NODE_ENV = undefined;
         const dLog = Log();
+        // console.log(dLog);
         expect(dLog.info).toStrictEqual(console.log);
         expect(dLog.err).toStrictEqual(console.error);
         expect(dLog.print).toStrictEqual(console.log);

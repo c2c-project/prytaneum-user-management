@@ -23,6 +23,7 @@ module.exports = {
         'import/no-absolute-path': 0,
         'no-underscore-dangle': 'off',
         'func-names': 'off',
+        '@typescript-eslint/naming-convention': 'off'
     },
     env: {
         node: true,

@@ -1,11 +1,11 @@
 declare global {
     namespace NodeJS {
         interface ProcessEnv {
-            NODE_ENV: 'development' | 'production' | 'test';
-            PORT: string;
-            ORIGIN: string;
-            DB_URL: string;
-            JWT_SECRET: string;
+            NODE_ENV?: 'development' | 'production' | 'test';
+            PORT?: string;
+            ORIGIN?: string;
+            DB_URL?: string;
+            JWT_SECRET?: string;
         }
     }
     interface Invitee {

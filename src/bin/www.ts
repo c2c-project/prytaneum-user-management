@@ -6,4 +6,10 @@ void connect();
 
 const { PORT, ORIGIN } = process.env;
 
-app.listen(Number(PORT), ORIGIN);
+const defaultOrigin = 'localhost';
+const defaultPort = 3001;
+
+const port = Number(PORT) || defaultPort;
+const origin = ORIGIN || defaultOrigin;
+
+app.listen(port, origin);

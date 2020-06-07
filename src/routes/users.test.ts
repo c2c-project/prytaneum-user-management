@@ -13,7 +13,7 @@ const mockUser = {
     password: '1',
     email: '__test__@__test__.com',
     userRoles: ['user'],
-    _id: null,
+    _id: new ObjectID(),
 };
 
 beforeAll(async () => {
@@ -32,6 +32,10 @@ afterAll(async () => {
     await Users.removeUser(mockUser.email);
     await Mongo.close();
 });
+
+interface Response {
+    status: number;
+}
 
 describe('users', () => {
     let _jwt: string;
@@ -55,51 +59,66 @@ describe('users', () => {
             expect(status).toStrictEqual(401);
         });
         it('should accept a valid username & password', async () => {
-            const { status, body } = await request(app)
+            const { status, body } = (await request(app)
                 .post('/api/auth/login')
                 .send({
                     username: mockUser.username,
                     password: mockUser.password,
-                });
+                })) as Response & {
+                body: {
+                    jwt: string;
+                };
+            };
             expect(status).toStrictEqual(200);
             _jwt = body.jwt;
         });
         it('should catch if JWT_SECRET is undefined', async () => {
-            const cachedEnv = process.env.JWT_SECRET;
+            const cachedSecret = process.env.JWT_SECRET;
+            const cachedEnv = process.env.NODE_ENV;
             delete process.env.JWT_SECRET;
+            delete process.env.NODE_ENV;
             const { status } = await request(app).post('/api/auth/login').send({
                 username: mockUser.username,
                 password: mockUser.password,
             });
             expect(status).toStrictEqual(500);
-            process.env.JWT_SECRET = cachedEnv;
+            process.env.JWT_SECRET = cachedSecret;
+            process.env.NODE_ENV = cachedEnv;
         });
     });
 
-    describe('#login-temporary', () => {
-        it('should succeed', async () => {
-            const { status, body } = await request(app)
-                .post('/api/auth/login-temporary')
-                .send({
-                    username: 'fake@fake.com',
-                });
-            const { jwt: token } = body;
+    // describe('#login-temporary', () => {
+    //     it('should succeed', async () => {
+    //         const { status, body } = (await request(app)
+    //             .post('/api/auth/login-temporary')
+    //             .send({
+    //                 username: 'fake@fake.com',
+    //             })) as Response & {
+    //             body: {
+    //                 jwt: string;
+    //             };
+    //         };
+    //         const { jwt: token } = body;
 
-            expect(status).toStrictEqual(200);
-            expect(token).toBeTruthy();
-            await Users.collection.deleteOne({ username: 'fake@fake.com' });
-        });
-        it('should fail to login as existing user', async () => {
-            const { status, body } = await request(app)
-                .post('/api/auth/login-temporary')
-                .send({
-                    username: mockUser.username,
-                });
-            const { jwt: token } = body;
-            expect(status).toStrictEqual(400);
-            expect(token).toBeFalsy();
-        });
-    });
+    //         expect(status).toStrictEqual(200);
+    //         expect(token).toBeTruthy();
+    //         await Users.deleteOne({ username: 'fake@fake.com' });
+    //     });
+    //     it('should fail to login as existing user', async () => {
+    //         const { status, body } = (await request(app)
+    //             .post('/api/auth/login-temporary')
+    //             .send({
+    //                 username: mockUser.username,
+    //             })) as Response & {
+    //             body: {
+    //                 jwt: string;
+    //             };
+    //         };
+    //         const { jwt: token } = body;
+    //         expect(status).toStrictEqual(400);
+    //         expect(token).toBeFalsy();
+    //     });
+    // });
 
     describe('#register', () => {
         it('should register a user', async () => {
@@ -198,9 +217,12 @@ describe('users', () => {
     describe('#consume-password-reset-token', () => {
         it('should accept valid token', async () => {
             const { _id } = mockUser;
-            const token = await jwt.sign({ _id }, process.env.JWT_SECRET, {
-                expiresIn: '2m',
-            });
+            const token = await jwt.sign(
+                { _id },
+                {
+                    expiresIn: '2m',
+                }
+            );
 
             const { status } = await request(app)
                 .post('/api/auth/consume-password-reset-token')
@@ -235,9 +257,12 @@ describe('users', () => {
         });
         it('should reject expired token', async () => {
             const { _id } = mockUser;
-            const token = await jwt.sign({ _id }, process.env.JWT_SECRET, {
-                expiresIn: '-10s',
-            });
+            const token = await jwt.sign(
+                { _id },
+                {
+                    expiresIn: '-10s',
+                }
+            );
 
             const { status } = await request(app)
                 .post('/api/auth/consume-password-reset-token')
@@ -252,9 +277,12 @@ describe('users', () => {
         });
         it('should reject mismatching password', async () => {
             const { _id } = mockUser;
-            const token = await jwt.sign({ _id }, process.env.JWT_SECRET, {
-                expiresIn: '2m',
-            });
+            const token = await jwt.sign(
+                { _id },
+                {
+                    expiresIn: '2m',
+                }
+            );
 
             const { status } = await request(app)
                 .post('/api/auth/consume-password-reset-token')

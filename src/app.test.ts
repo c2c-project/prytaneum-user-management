@@ -5,11 +5,11 @@ import connect from './db/connect';
 import Mongo from './config/mongo.config';
 
 beforeAll(async () => {
-    connect();
+    await connect();
 });
 
 afterAll(async () => {
-    Mongo.close();
+    await Mongo.close();
 });
 
 describe('App', function () {

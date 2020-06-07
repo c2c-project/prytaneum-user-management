@@ -1,18 +1,26 @@
 import jwt from 'jsonwebtoken';
 
+const getSecret = () => {
+    const secret = process.env.JWT_SECRET || 'secret';
+    const env = process.env.NODE_ENV || 'production';
+    if (env === 'production' && secret === 'secret') {
+        throw new Error('JWT_SECRET IS SET INCORRECTLY IN PRODUCTION!');
+    }
+    return secret;
+};
+
 /**
  * @description wrapper to jsonwebtoken.verify
  * @arg {string} token
- * @arg {string} secret
  * @returns {Promise} resolves to a decoded jwt on success
  */
-const verify = async function (token, secret) {
+const verify = function (token: string): Promise<Record<string, unknown>> {
     return new Promise((resolve, reject) => {
-        jwt.verify(token, secret, (err, decodedJwt) => {
+        jwt.verify(token, getSecret(), (err, decodedJwt) => {
             if (err) {
                 reject(err);
             } else {
-                resolve(decodedJwt);
+                resolve(decodedJwt as Record<string, unknown>);
             }
         });
     });
@@ -21,13 +29,15 @@ const verify = async function (token, secret) {
 /**
  * @description wrapper to jsonwebtoken.sign
  * @arg {Any} target this is going to jwt'd
- * @arg {String} secret
  * @arg {Object} [options] optional options for jwt signing
  * @returns {Promise} resolves to the jwt on success
  */
-const sign = async function (target, secret, options = {}) {
+const sign = function (
+    target: string | Record<string, unknown> | Buffer,
+    options = {}
+): Promise<string> {
     return new Promise((resolve, reject) => {
-        jwt.sign(target, secret, options, (err, token) => {
+        jwt.sign(target, getSecret(), options, (err, token) => {
             if (err) {
                 reject(err);
             } else {

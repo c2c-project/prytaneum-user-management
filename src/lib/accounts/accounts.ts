@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/indent */
 import bcrypt from 'bcrypt';
+import { UpdateWriteOpResult, WithId } from 'mongodb';
 
-import Users, { whitelist, ClientSafeUserDoc, DBUser } from 'db/users';
+import Users, { whitelist, ClientSafeUserDoc, UserDoc } from 'db/users';
 import jwt from '../jwt';
 import { ClientError } from '../errors';
 import Emails from '../email';
@@ -9,15 +10,20 @@ import Emails from '../email';
 const SALT_ROUNDS = 10;
 const BASE_USER = {
     roles: ['user'],
+    verified: false,
+    name: {
+        fName: '',
+        lName: '',
+    },
 };
 
 /**
  * @description Realistically, only one of the required's fields within the requirements object will be used at any given time
  * @arg {Array} userRoles the array of string codes corresponding to the user's assigned roles
- * @arg {Object} requirements the object containing different role requirements for what they are trying to access
- * @returns {Promise} evalutes to a boolean
+ * @arg {object} requirements the object containing different role requirements for what they are trying to access
+ * @returns {boolean} evalutes to a boolean
  */
-const isAllowed = async (
+const isAllowed = (
     userRoles: Array<string> = [],
     {
         requiredAll = [],
@@ -28,7 +34,7 @@ const isAllowed = async (
         requiredAny?: string[];
         requiredNot?: string[];
     } = {}
-): Promise<boolean> => {
+): boolean => {
     if (userRoles.length === 0) {
         return false;
     }
@@ -59,9 +65,11 @@ const isAllowed = async (
  * @description verifies the user; expects catch in calling function
  * @arg {string} userId _id of the user to verify
  * @throws {ClientError} The user navigated to an invalid link
- * @returns {Promise} MongoDB Cursor Promise
+ * @returns {Promise<UpdateWriteOpResult>} MongoDB Cursor Promise
  */
-const confirmUserEmail = async (userId: string): Promise<any> => {
+const confirmUserEmail = async (
+    userId: string
+): Promise<UpdateWriteOpResult> => {
     const doc = await Users.findByUserId(userId);
 
     if (doc) {
@@ -78,14 +86,24 @@ const confirmUserEmail = async (userId: string): Promise<any> => {
  * @returns {Promise} evaluates to the email sent
  * @throws {ClientError} Invalid Email or error with signing jwt
  */
-const sendPasswordResetEmail = async (email: string): Promise<any> => {
+// TODO: remove the any/unknown
+const sendPasswordResetEmail = async (email: string): Promise<unknown> => {
     const doc = await Users.findByEmail(email);
+    const { JWT_SECRET } = process.env;
+    const defaultSecret = 'secret';
+    const secret = JWT_SECRET || defaultSecret;
+    if (secret === defaultSecret) {
+        // TODO: LOG A WARNING BECAUSE THIS SHOULD NOT HAPPEN
+    }
     if (doc) {
         // Filter doc
         const { _id } = doc;
-        const token = await jwt.sign({ _id }, process.env.JWT_SECRET, {
-            expiresIn: '30m',
-        });
+        const token = await jwt.sign(
+            { _id },
+            {
+                expiresIn: '30m',
+            }
+        );
         return Emails.sendPasswordReset(email, token);
     }
     throw new ClientError('Invalid Email');
@@ -96,14 +114,14 @@ const sendPasswordResetEmail = async (email: string): Promise<any> => {
  * @param {object} decodedJwt user jwt that is decoded
  * @param {string} password new password
  * @param {string} confirmPassword new password confirmation
- * @returns {Promise} resolves to a MongoDB cursor on success
+ * @returns {Promise<UpdateWriteOpResult>} resolves to a MongoDB cursor on success
  * @throws {ClientError} Passwords do Not Match, Invalid Link, Expired Link
  */
 const updatePassword = async (
-    decodedJwt: { _id: string },
+    decodedJwt: UserDoc & { _id: string },
     password: string,
     confirmPassword: string
-): Promise<any> => {
+): Promise<UpdateWriteOpResult> => {
     const { _id } = decodedJwt;
     // Find user in database then hash and update with new password
     if (password === confirmPassword) {
@@ -134,11 +152,14 @@ const register = async (
     additionalFields: {
         email?: string;
     } = {}
-): Promise<any> => {
+): Promise<WithId<UserDoc>> => {
     const { email } = additionalFields;
 
     // if the user registered with an email & username, then find by username or email
     // because both should be unique, otherwise just find by username
+    // interface Query {
+
+    // }
     const query = email ? { $or: [{ email }, { username }] } : { username };
 
     if (password === confirmPass) {
@@ -162,47 +183,58 @@ const register = async (
     throw new ClientError('Passwords do not match');
 };
 
-/**
- * @description registers a user temporarily
- * @arg {String} username
- * @returns {Promise} resolves to a MongoDB cursor
- * @throws {ClientError} Username already exists
- */
-const registerTemporary = async (
-    username: string,
-    additionalFields = {}
-): Promise<any> => {
-    const doc = await Users.findByUsername({ username });
-    // if username does not already exist
-    if (!doc) {
-        return Users.addUser({
-            username,
-            ...additionalFields,
-            temporary: true,
-        });
-    }
-    throw new ClientError('Username already exists');
-};
+// TODO: remove this
+// /**
+//  * @description registers a user temporarily
+//  * @arg {String} username
+//  * @returns {Promise<TempUser>} resolves to a MongoDB cursor
+//  * @throws {ClientError} Username already exists
+//  */
+// const registerTemporary = async (
+//     username: string,
+//     additionalFields = {}
+// ): Promise<TempUser> => {
+//     const doc = await Users.findByUsername({ username });
+//     // if username already exists
+//     if (doc) {
+//         throw new ClientError('Username already exists');
+//     }
+//     return Users.addUser({
+//         username,
+//         ...additionalFields,
+//         temporary: true,
+//     });
+// };
 
 // TODO: figure out where this should belong
 /**
  * @description filters the sensitive data using whitelist methodology
- * @arg {DBUser} userDoc target to filter
- * @returns {ClientSafeUserDoc} resolves to the userDoc with ONLY whitelisted fields
+ * @arg {UserDoc} userDoc target to filter
+ * @returns {Partial<ClientSafeUserDoc>} resolves to the userDoc with ONLY whitelisted fields
  */
-const filterSensitiveData = (userDoc: DBUser): ClientSafeUserDoc => {
-    type Entry = [keyof DBUser, unknown];
+const filterSensitiveData = (userDoc: UserDoc): Partial<ClientSafeUserDoc> => {
+    // type Entry = [keyof DBUser, unknown];
+    // function reducer(
+    //     accum: Partial<DBUser>,
+    //     [key, value]: Entry
+    // ): Partial<ClientSafeUserDoc> {
+    //     if (whitelist.includes(key)) {
+    //         return { ...accum, [key]: value };
+    //     }
+    //     return accum;
+    // }
+    // const entries: Entry[] = Object.entries<DBUser>(userDoc);
+    // return Object.entries(userDoc).reduce(reducer, {});
     function reducer(
-        accum: Partial<DBUser>,
-        [key, value]: Entry
+        accum: Partial<ClientSafeUserDoc>,
+        key: keyof UserDoc
     ): Partial<ClientSafeUserDoc> {
-        if (whitelist.includes(key)) {
-            return { ...accum, [key]: value };
+        if (userDoc[key] !== undefined) {
+            return { ...accum, [key]: userDoc[key] };
         }
         return accum;
     }
-    const entries: Entry[] = Object.entries<DBUser>(userDoc);
-    return Object.entries(userDoc).reduce(reducer, {});
+    return whitelist.reduce<Partial<ClientSafeUserDoc>>(reducer, {});
 };
 
 /**
@@ -211,13 +243,13 @@ const filterSensitiveData = (userDoc: DBUser): ClientSafeUserDoc => {
  * @arg {object} doc
  * @returns {boolean} whether or not the user is the owner of a particular document
  */
-const isOwner = (userId: '', doc: { userId?: string } = {}): boolean => {
+const isOwner = (userId = '', doc: { userId?: string } = {}): boolean => {
     return doc.userId === String(userId);
 };
 
 export default {
     register,
-    registerTemporary,
+    // registerTemporary,
     verifyPassword: bcrypt.compare,
     isAllowed,
     filterSensitiveData,
