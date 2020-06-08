@@ -1,5 +1,6 @@
-import express, { Request } from 'express';
+import express, { Request, NextFunction, Response } from 'express';
 import passport from 'passport';
+import { body, validationResult } from 'express-validator';
 
 import jwt from 'lib/jwt/jwt';
 import Accounts from 'lib/accounts';
@@ -15,25 +16,45 @@ interface RegForm {
     password: string;
     confirmPassword: string;
 }
-router.post('/register', async (req, res, next) => {
-    try {
-        const { form } = req.body as { form: RegForm };
-        const { username, email, password, confirmPassword } = form;
-        const { _id } = await Accounts.register(
-            username,
-            password,
-            confirmPassword,
-            {
-                email,
-            }
-        );
-        // TODO: provide option to re-send verification email
-        Emails.sendEmailVerification(email, _id);
-        res.status(200).send();
-    } catch (e) {
-        next(e);
+
+function validate(req: Request, res: Response, next: NextFunction) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        res.status(400).send({ errors: errors.array() });
+    } else {
+        next();
     }
-});
+}
+router.post(
+    '/register',
+    [
+        body('form.username').notEmpty(),
+        body('form.email').notEmpty(),
+        body('form.password').notEmpty(),
+        body('form.confirmPassword').notEmpty(),
+    ],
+    validate,
+    async (req: Request, res: Response, next: NextFunction) => {
+
+        try {
+            const { form } = req.body as { form: RegForm };
+            const { username, email, password, confirmPassword } = form;
+            const { _id } = await Accounts.register(
+                username,
+                password,
+                confirmPassword,
+                {
+                    email,
+                }
+            );
+            // TODO: provide option to re-send verification email
+            Emails.sendEmailVerification(email, _id);
+            res.status(200).send();
+        } catch (e) {
+            next(e);
+        }
+    }
+);
 
 router.post(
     '/login',
