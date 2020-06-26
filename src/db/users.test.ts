@@ -3,7 +3,7 @@ import Mongo from './mongo';
 
 beforeAll(async () => {
     await Mongo.init();
-    await Users.init();
+    Users.init();
 });
 
 afterAll(async () => {
@@ -11,8 +11,8 @@ afterAll(async () => {
 });
 
 describe('user collection tests', () => {
-    it('init should fail since it has already been called', async () => {
+    it('init should fail since it has already been called', () => {
         expect(Users.isInitialized()).toStrictEqual(true);
-        await Users.init();
+        Users.init();
     });
 });

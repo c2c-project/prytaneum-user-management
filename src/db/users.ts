@@ -38,28 +38,21 @@ export const whitelist: string[] = [
 ];
 export type ClientSafeUserDoc = Pick<UserDoc, WhiteList>;
 
-export default (function () {
+function Users() {
     let initialized = false;
     let collection: Collection<UserDoc>;
-
-    const throwIfNotInitialized = () => {
-        if (!initialized) {
-            throw new Error('Not yet connected to DB');
-        }
-    };
 
     return {
         isInitialized() {
             return initialized;
         },
-        async init(): Promise<void> {
+        init(): void {
             if (!initialized) {
-                collection = await Mongo.collection<UserDoc>('users');
+                collection = Mongo.collection<UserDoc>('users');
                 initialized = true;
             }
         },
         async addUser(userDoc: UserDoc) {
-            throwIfNotInitialized();
             const writeResult = await collection.insertOne(userDoc);
             return writeResult.ops[0];
         },
@@ -67,41 +60,36 @@ export default (function () {
             filter: FilterQuery<UserDoc>,
             modification: UpdateQuery<Partial<UserDoc>>
         ) {
-            throwIfNotInitialized();
             return collection.updateOne(filter, modification);
         },
         async removeUser(email: string) {
-            throwIfNotInitialized();
             return collection.deleteOne({ email });
         },
         async findByUsername({ username }: { username: string }) {
-            throwIfNotInitialized();
             return collection
                 .find({ username })
                 .toArray()
                 .then((r) => r[0]);
         },
         async findByUserId(userId: ObjectID | string) {
-            throwIfNotInitialized();
             return collection
                 .find({ _id: new ObjectID(userId) })
                 .toArray()
                 .then((r) => r[0]);
         },
         async findByEmail(email: string) {
-            throwIfNotInitialized();
             return collection
                 .find({ email })
                 .toArray()
                 .then((r) => r[0]);
         },
         async find(query: FilterQuery<UserDoc>) {
-            throwIfNotInitialized();
             return collection.find(query).toArray();
         },
         async deleteOne(query: FilterQuery<UserDoc>) {
-            throwIfNotInitialized();
             return collection.deleteOne(query);
         },
     };
-})();
+}
+
+export default Users();
