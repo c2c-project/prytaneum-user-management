@@ -1,12 +1,6 @@
 /* eslint-disable @typescript-eslint/indent */
-import {
-    ObjectID,
-    Collection,
-    UpdateQuery,
-    FilterQuery,
-    ObjectId,
-} from 'mongodb';
-import Mongo from './mongo';
+import { ObjectId, Db, Collection } from 'mongodb';
+import { getCollection } from './mongo';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 export interface UserDoc extends Express.User {
@@ -38,58 +32,11 @@ export const whitelist: string[] = [
 ];
 export type ClientSafeUserDoc = Pick<UserDoc, WhiteList>;
 
-function Users() {
-    let initialized = false;
-    let collection: Collection<UserDoc>;
+export default (): Collection<UserDoc> => getCollection<UserDoc>('users');
 
-    return {
-        isInitialized() {
-            return initialized;
-        },
-        init(): void {
-            if (!initialized) {
-                collection = Mongo.collection<UserDoc>('users');
-                initialized = true;
-            }
-        },
-        async addUser(userDoc: UserDoc) {
-            const writeResult = await collection.insertOne(userDoc);
-            return writeResult.ops[0];
-        },
-        async updateUser(
-            filter: FilterQuery<UserDoc>,
-            modification: UpdateQuery<Partial<UserDoc>>
-        ) {
-            return collection.updateOne(filter, modification);
-        },
-        async removeUser(email: string) {
-            return collection.deleteOne({ email });
-        },
-        async findByUsername({ username }: { username: string }) {
-            return collection
-                .find({ username })
-                .toArray()
-                .then((r) => r[0]);
-        },
-        async findByUserId(userId: ObjectID | string) {
-            return collection
-                .find({ _id: new ObjectID(userId) })
-                .toArray()
-                .then((r) => r[0]);
-        },
-        async findByEmail(email: string) {
-            return collection
-                .find({ email })
-                .toArray()
-                .then((r) => r[0]);
-        },
-        async find(query: FilterQuery<UserDoc>) {
-            return collection.find(query).toArray();
-        },
-        async deleteOne(query: FilterQuery<UserDoc>) {
-            return collection.deleteOne(query);
-        },
-    };
-}
-
-export default Users();
+// export default {
+//     collectionName: 'users',
+//     init(db: Db): Collection<UserDoc> {
+//         return db.collection<UserDoc>(this.collectionName);
+//     },
+// };

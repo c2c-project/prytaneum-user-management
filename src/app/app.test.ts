@@ -1,8 +1,7 @@
 import request from 'supertest';
 
 import { _test as EnvTest } from 'config/env';
-import connect from 'db/connect';
-import Mongo from 'db/mongo';
+import { connect, close } from 'db';
 import app, { _test as AppTest } from './app';
 
 const { env } = EnvTest;
@@ -12,7 +11,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-    await Mongo.close();
+    await close();
 });
 
 describe('App', function () {

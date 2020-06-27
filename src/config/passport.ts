@@ -1,8 +1,10 @@
 import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
 import { Strategy as JWTStrategy, ExtractJwt } from 'passport-jwt';
+import { ObjectID } from 'mongodb';
+
 import Accounts from 'lib/accounts';
-import Users, { UserDoc } from 'db/users';
+import Collections from 'db';
 import env from 'config/env';
 
 passport.use(
@@ -10,23 +12,24 @@ passport.use(
     new LocalStrategy((username: string, password: string, done) => {
         async function verify(): Promise<void> {
             try {
-                const user = await Users.findByUsername({ username });
+                const user = await Collections.Users().findOne({ username });
                 if (!user) {
                     // user does not exist
                     done(null, false);
-                }
-                const isVerified = await Accounts.verifyPassword(
-                    password,
-                    user.password
-                );
+                } else {
+                    const isVerified = await Accounts.verifyPassword(
+                        password,
+                        user.password
+                    );
 
-                // password does not match
-                if (!isVerified) {
-                    done(null, false);
-                }
+                    // password does not match
+                    if (!isVerified) {
+                        done(null, false);
+                    }
 
-                // password matches and we're good to go
-                done(null, user);
+                    // password matches and we're good to go
+                    done(null, user);
+                }
             } catch (e) {
                 // some error happened somewhere
                 done(e);
@@ -45,18 +48,22 @@ passport.use(
             secretOrKey: env.JWT_SECRET,
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
         },
-        (jwtPayload: UserDoc & { _id: string }, done) => {
+        ({ _id }: { _id: string }, done) => {
             async function verify() {
                 try {
-                    const user = await Users.findByUserId(jwtPayload._id);
+                    const user = await Collections.Users().findOne({
+                        _id: new ObjectID(_id),
+                    });
                     if (!user) {
                         done(null, false);
+                    } else {
+                        done(null, user);
                     }
-                    done(null, user);
                 } catch (e) {
                     done(e);
                 }
             }
+
             // eslint-disable-next-line no-void
             void verify();
         }

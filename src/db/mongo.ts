@@ -3,27 +3,21 @@ import config from 'config/mongo';
 
 const { dbName, url } = config;
 
-function Mongo() {
-    const client = new MongoClient(url, { useUnifiedTopology: true });
-    const connect = () =>
-        client
-            .connect()
-            .then((connection: MongoClient) => connection.db(dbName));
+let db: Db;
+const client = new MongoClient(url, { useUnifiedTopology: true }).connect();
 
-    let dbInstance: Db;
-
-    return {
-        async init() {
-            dbInstance = await connect();
-            return dbInstance;
-        },
-        collection<T>(name: string): Collection<T> {
-            return dbInstance.collection<T>(name);
-        },
-        close() {
-            return client.close();
-        },
-    };
+export async function connectToMongo(): Promise<void> {
+    db = (await client).db(dbName);
 }
 
-export default Mongo();
+export function getDb(): Db {
+    return db;
+}
+
+export function getCollection<T>(name: string): Collection<T> {
+    return db.collection<T>(name);
+}
+
+export async function close(): Promise<void> {
+    return (await client).close();
+}

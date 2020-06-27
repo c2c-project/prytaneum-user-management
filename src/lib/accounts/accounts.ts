@@ -1,8 +1,13 @@
 /* eslint-disable @typescript-eslint/indent */
 import bcrypt from 'bcrypt';
-import { UpdateWriteOpResult, WithId } from 'mongodb';
+import {
+    UpdateWriteOpResult,
+    InsertOneWriteOpResult,
+    WithId,
+    ObjectID,
+} from 'mongodb';
 
-import Users, { whitelist, ClientSafeUserDoc, UserDoc } from 'db/users';
+import Collections, { whitelist, ClientSafeUserDoc, UserDoc } from 'db';
 import env from 'config/env';
 import jwt from '../jwt/jwt';
 import { ClientError } from '../errors';
@@ -71,11 +76,12 @@ const isAllowed = (
 const confirmUserEmail = async (
     userId: string
 ): Promise<UpdateWriteOpResult> => {
-    const doc = await Users.findByUserId(userId);
+    const objectUserId = new ObjectID(userId);
+    const doc = await Collections.Users().findOne({ _id: objectUserId });
 
     if (doc) {
         const verified = { $set: { verified: true } };
-        return Users.updateUser(doc, verified);
+        return Collections.Users().updateOne({ _id: objectUserId }, verified);
     }
 
     throw new ClientError('Invalid Link');
@@ -89,7 +95,7 @@ const confirmUserEmail = async (
  */
 // TODO: remove the any/unknown
 const sendPasswordResetEmail = async (email: string): Promise<unknown> => {
-    const doc = await Users.findByEmail(email);
+    const doc = await Collections.Users().findOne({ email });
     const { JWT_SECRET } = env;
     const defaultSecret = 'secret';
     const secret = JWT_SECRET || defaultSecret;
@@ -126,12 +132,12 @@ const updatePassword = async (
     const { _id } = decodedJwt;
     // Find user in database then hash and update with new password
     if (password === confirmPassword) {
-        const doc = await Users.findByUserId(_id);
+        // const doc = await Collections.Users().findOne({ _id });
         const encryptedPw = await bcrypt.hash(password, SALT_ROUNDS);
         const updatedPassword = {
             $set: { password: encryptedPw },
         };
-        return Users.updateUser(doc, updatedPassword);
+        return Collections.Users().updateOne({ _id }, updatedPassword);
     }
     // if they do not match, throw an error
     throw new ClientError('Passwords do not match');
@@ -153,7 +159,7 @@ const register = async (
     additionalFields: {
         email?: string;
     } = {}
-): Promise<WithId<UserDoc>> => {
+): Promise<InsertOneWriteOpResult<WithId<UserDoc>>> => {
     const { email } = additionalFields;
 
     // if the user registered with an email & username, then find by username or email
@@ -165,18 +171,24 @@ const register = async (
 
     if (password === confirmPass) {
         // returning a Promise here -- so register.then.catch will work
-        const docArray = await Users.find(query);
+        const match = await Collections.Users().findOne(query);
 
         // if username and email do not already exist, based on my query before
-        if (!docArray[0]) {
+        if (!match) {
             const encryptedPw = await bcrypt.hash(password, SALT_ROUNDS);
-            return Users.addUser({
+            return Collections.Users().insertOne({
                 username,
                 password: encryptedPw,
-                // BASE_USER before additionalFields so that way additionalFields can override defaults if necessary
                 ...BASE_USER,
                 ...additionalFields,
             });
+            // return Collections.Users().insertOne({
+            //     username,
+            //     password: encryptedPw,
+            //     // BASE_USER before additionalFields so that way additionalFields can override defaults if necessary
+            //     ...BASE_USER,
+            //     ...additionalFields,
+            // });
         }
 
         throw new ClientError('Username or E-mail already exists');
@@ -195,12 +207,12 @@ const register = async (
 //     username: string,
 //     additionalFields = {}
 // ): Promise<TempUser> => {
-//     const doc = await Users.findByUsername({ username });
+//     const doc = await Collections.Users().findByUsername({ username });
 //     // if username already exists
 //     if (doc) {
 //         throw new ClientError('Username already exists');
 //     }
-//     return Users.addUser({
+//     return Collections.Users().addUser({
 //         username,
 //         ...additionalFields,
 //         temporary: true,

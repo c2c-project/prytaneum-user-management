@@ -35,11 +35,10 @@ router.post(
     ],
     validate,
     async (req: Request, res: Response, next: NextFunction) => {
-
         try {
             const { form } = req.body as { form: RegForm };
             const { username, email, password, confirmPassword } = form;
-            const { _id } = await Accounts.register(
+            const { insertedId } = await Accounts.register(
                 username,
                 password,
                 confirmPassword,
@@ -48,7 +47,7 @@ router.post(
                 }
             );
             // TODO: provide option to re-send verification email
-            Emails.sendEmailVerification(email, _id);
+            Emails.sendEmailVerification(email, insertedId);
             res.status(200).send();
         } catch (e) {
             next(e);

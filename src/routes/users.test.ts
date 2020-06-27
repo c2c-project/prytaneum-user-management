@@ -2,11 +2,10 @@ import { ObjectID } from 'mongodb';
 import request from 'supertest';
 
 import app from 'app';
-import Users from 'db/users';
 import Accounts from 'lib/accounts';
 import jwt from 'lib/jwt/jwt';
-import connect from 'db/connect';
-import Mongo from 'db/mongo';
+import Collections, { connect, close } from 'db';
+// import Mongo from 'db/mongo';
 import { _test as EnvTest } from 'config/env';
 
 const { env } = EnvTest;
@@ -21,7 +20,7 @@ const mockUser = {
 
 beforeAll(async () => {
     await connect();
-    const { _id } = await Accounts.register(
+    const { insertedId } = await Accounts.register(
         mockUser.username,
         mockUser.password,
         mockUser.password,
@@ -29,11 +28,11 @@ beforeAll(async () => {
             email: mockUser.email,
         }
     );
-    mockUser._id = _id;
+    mockUser._id = insertedId;
 });
 afterAll(async () => {
-    await Users.removeUser(mockUser.email);
-    await Mongo.close();
+    await Collections.Users().deleteOne({ email: mockUser.email });
+    await close();
 });
 
 interface Response {
@@ -136,7 +135,7 @@ describe('users', () => {
                     },
                 });
             expect(status).toStrictEqual(200);
-            await Users.removeUser('blah@blah.com');
+            await Collections.Users().deleteOne({ email: 'blah@blah.com' });
         });
         it('should not register an already existing user', async () => {
             const { status } = await request(app)
@@ -175,6 +174,7 @@ describe('users', () => {
             expect(status).toStrictEqual(200);
         });
         it('should reject a tampered jwt', async () => {
+            // const tamperedJwt = `asdf${_jwt}$`;
             const { status } = await request(app)
                 .post('/api/auth/authenticate')
                 // maybe think of more ways to tamper with the jwt?

@@ -1,5 +1,4 @@
-import Mongo from 'db/mongo';
-import connect from 'db/connect';
+import { connect, close } from 'db';
 
 import Accounts from './accounts';
 
@@ -8,7 +7,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-    await Mongo.close();
+    await close();
 });
 
 describe('Accounts', () => {
