@@ -1,3 +1,5 @@
+import { UserUtils } from 'db';
+
 declare global {
     namespace NodeJS {
         interface ProcessEnv {
@@ -6,12 +8,12 @@ declare global {
             ORIGIN?: string;
             DB_URL?: string;
             JWT_SECRET?: string;
+            COOKIE_SECRET?: string;
         }
     }
-    interface Invitee {
-        fName: string;
-        lName: string;
-        email: string;
+    namespace Express {
+        // eslint-disable-next-line @typescript-eslint/no-empty-interface
+        interface User extends UserUtils.UserDoc {}
     }
 }
 

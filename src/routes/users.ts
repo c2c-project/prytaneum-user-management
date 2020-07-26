@@ -1,9 +1,8 @@
-import express, { Request, NextFunction, Response } from 'express';
+import express, { Request } from 'express';
 import passport from 'passport';
-import { body, validationResult } from 'express-validator';
 
 import jwt from 'lib/jwt/jwt';
-import Accounts from 'lib/accounts';
+import Users from 'lib/users';
 import Emails from 'lib/email';
 import { ClientError } from 'lib/errors';
 import { UserDoc } from 'db/users';
@@ -11,49 +10,27 @@ import { UserDoc } from 'db/users';
 const router = express.Router();
 
 interface RegForm {
-    username: string;
     email: string;
     password: string;
     confirmPassword: string;
 }
 
-function validate(req: Request, res: Response, next: NextFunction) {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        res.status(400).send({ errors: errors.array() });
-    } else {
-        next();
+router.post('/register', async (req, res, next) => {
+    try {
+        const { form } = req.body as { form: RegForm };
+        const { email, password, confirmPassword } = form;
+        const { insertedId } = await Users.register(
+            email,
+            password,
+            confirmPassword
+        );
+        // TODO: provide option to re-send verification email
+        Emails.sendEmailVerification(email, insertedId);
+        res.sendStatus(200);
+    } catch (e) {
+        next(e);
     }
-}
-router.post(
-    '/register',
-    [
-        body('form.username').notEmpty(),
-        body('form.email').notEmpty(),
-        body('form.password').notEmpty(),
-        body('form.confirmPassword').notEmpty(),
-    ],
-    validate,
-    async (req: Request, res: Response, next: NextFunction) => {
-        try {
-            const { form } = req.body as { form: RegForm };
-            const { username, email, password, confirmPassword } = form;
-            const { insertedId } = await Accounts.register(
-                username,
-                password,
-                confirmPassword,
-                {
-                    email,
-                }
-            );
-            // TODO: provide option to re-send verification email
-            Emails.sendEmailVerification(email, insertedId);
-            res.status(200).send();
-        } catch (e) {
-            next(e);
-        }
-    }
-);
+});
 
 router.post(
     '/login',
@@ -64,50 +41,40 @@ router.post(
             if (!user) {
                 throw new ClientError('Invalid Login');
             }
-            const clientUser = Accounts.filterSensitiveData(user);
+            const clientUser = Users.filterSensitiveData(user);
             const token = await jwt.sign(clientUser, {});
-            res.status(200).send({ jwt: token });
+            res.cookie('jwt', token, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                signed: true,
+            });
+            res.sendStatus(200);
         } catch (e) {
             next(e);
         }
     }
 );
 
-// NOTE: unprotected route here
-// TODO: rate limit this
-// router.post('/login-temporary', async (req, res, next) => {
-//     try {
-//         const { username } = req.body;
-//         const userDoc = await Accounts.registerTemporary(username, {
-//             roles: ['user'],
+// router.post(
+//     '/authenticate',
+//     passport.authenticate('jwt', { session: false }),
+//     (req, res) => {
+//         const { user } = req as Request & { user: UserDoc };
+//         const { requiredAny, requiredAll, requiredNot } = req.body as {
+//             requiredAll?: string[];
+//             requiredAny?: string[];
+//             requiredNot?: string[];
+//         };
+//         const allowed = Users.isAllowed(user.roles, {
+//             requiredAll,
+//             requiredAny,
+//             requiredNot,
 //         });
-//         const token = await jwt.sign(userDoc, {});
-//         res.status(200).send({ jwt: token });
-//     } catch (e) {
-//         next(e);
+//         res.status(200).send({
+//             allowed,
+//         });
 //     }
-// });
-
-router.post(
-    '/authenticate',
-    passport.authenticate('jwt', { session: false }),
-    (req, res) => {
-        const { user } = req as Request & { user: UserDoc };
-        const { requiredAny, requiredAll, requiredNot } = req.body as {
-            requiredAll?: string[];
-            requiredAny?: string[];
-            requiredNot?: string[];
-        };
-        const allowed = Accounts.isAllowed(user.roles, {
-            requiredAll,
-            requiredAny,
-            requiredNot,
-        });
-        res.status(200).send({
-            allowed,
-        });
-    }
-);
+// );
 
 router.post('/confirm/user-email', async (req, res, next) => {
     // we want to wait for this before sending a success message
@@ -116,7 +83,7 @@ router.post('/confirm/user-email', async (req, res, next) => {
         if (!userId) {
             throw new ClientError('Invalid input provided');
         }
-        await Accounts.verifyUser(userId);
+        await Users.verifyUser(userId);
         res.status(200).send();
     } catch (e) {
         next(e);
@@ -130,7 +97,7 @@ router.post('/request-password-reset', async (req, res, next) => {
         if (!form || !form.email) {
             throw new ClientError('Invalid input provided'); // TODO: unify error messages
         }
-        await Accounts.sendPasswordResetEmail(form.email);
+        await Users.sendPasswordResetEmail(form.email);
         res.status(200).send();
     } catch (e) {
         next(e);
@@ -155,7 +122,7 @@ router.post('/consume-password-reset-token', async (req, res, next) => {
         const decodedJwt = (await jwt.verify(token)) as UserDoc & {
             _id: string;
         };
-        await Accounts.updatePassword(decodedJwt, password, confirmPassword);
+        await Users.updatePassword(decodedJwt, password, confirmPassword);
 
         res.status(200).send('Password Reset');
     } catch (e) {

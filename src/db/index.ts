@@ -7,7 +7,7 @@ import { connectToMongo } from './mongo';
  * re-export anything from the collection files
  */
 export { close } from './mongo';
-export { UserDoc, ClientSafeUserDoc, whitelist } from './users';
+export * as UserUtils from './users';
 
 /**
  * declare collections here, they won't be undefined before being called
@@ -16,7 +16,7 @@ export { UserDoc, ClientSafeUserDoc, whitelist } from './users';
 let Users: Collection<UserDoc>;
 
 /**
- * connects to mongo and initializes db
+ * connects to mongo and initializes collections
  */
 export async function connect(): Promise<void> {
     await connectToMongo();

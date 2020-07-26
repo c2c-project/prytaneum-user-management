@@ -1,6 +1,6 @@
 import { connect, close } from 'db';
 
-import Accounts from './accounts';
+import Users from './users';
 
 beforeAll(async () => {
     await connect();
@@ -14,22 +14,22 @@ describe('Accounts', () => {
     describe('#isAllowed()', () => {
         const userRoles = ['moderator'];
         it('should reject if there are no required roles', () => {
-            const value = Accounts.isAllowed(userRoles, {});
+            const value = Users.isAllowed(userRoles, {});
             expect(value).toStrictEqual(false);
         });
         it('should reject if there are no user roles', () => {
-            const value = Accounts.isAllowed([], {});
+            const value = Users.isAllowed([], {});
             expect(value).toStrictEqual(false);
         });
         it('should pass various valid use cases', () => {
-            const value1 = Accounts.isAllowed(userRoles, {
+            const value1 = Users.isAllowed(userRoles, {
                 requiredAll: ['moderator'],
                 requiredNot: ['speaker'],
             });
-            const value2 = Accounts.isAllowed(userRoles, {
+            const value2 = Users.isAllowed(userRoles, {
                 requiredAny: ['admin', 'moderator'],
             });
-            const value3 = Accounts.isAllowed(userRoles, {
+            const value3 = Users.isAllowed(userRoles, {
                 requiredNot: ['speaker'],
             });
             expect(value1).toStrictEqual(true);
@@ -37,13 +37,13 @@ describe('Accounts', () => {
             expect(value3).toStrictEqual(true);
         });
         it('should reject various invalid use cases', () => {
-            const value1 = Accounts.isAllowed(userRoles, {
+            const value1 = Users.isAllowed(userRoles, {
                 requiredNot: ['moderator'],
             });
-            const value2 = Accounts.isAllowed(userRoles, {
+            const value2 = Users.isAllowed(userRoles, {
                 requiredAll: ['admin', 'moderator'],
             });
-            const value3 = Accounts.isAllowed(userRoles, {
+            const value3 = Users.isAllowed(userRoles, {
                 requiredAny: ['admin', 'user'],
             });
             expect(value1).toStrictEqual(false);
@@ -51,17 +51,17 @@ describe('Accounts', () => {
             expect(value3).toStrictEqual(false);
         });
         it('should reject with no args', () => {
-            const value = Accounts.isAllowed();
+            const value = Users.isAllowed();
             expect(value).toStrictEqual(false);
         });
     });
     describe('#isOwner()', () => {
         it('should return true', () => {
-            const result = Accounts.isOwner('1', { userId: '1' });
+            const result = Users.isOwner('1', { userId: '1' });
             expect(result).toBeTruthy();
         });
         it('should return false', () => {
-            const result = Accounts.isOwner('2', { userId: '1' });
+            const result = Users.isOwner('2', { userId: '1' });
             expect(result).toBeFalsy();
         });
     });

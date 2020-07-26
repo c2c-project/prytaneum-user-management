@@ -2,7 +2,7 @@ import express, { Express } from 'express';
 import createError from 'http-errors';
 import config from 'config/app';
 import env from 'config/env';
-import userRoutes from 'routes/users';
+import routes from 'routes';
 import { errorHandler } from 'lib/errors';
 
 function initApp(): Express {
@@ -11,7 +11,7 @@ function initApp(): Express {
     if (env.NODE_ENV === 'test') {
         app.get('/', (req, res) => res.sendStatus(200));
     }
-    app.use('/api/auth', userRoutes);
+    app.use('/api/auth', routes);
     app.use((req, res, next) => {
         next(createError(404));
     });

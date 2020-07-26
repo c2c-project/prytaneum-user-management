@@ -1,4 +1,4 @@
-import { Response, Request, NextFunction } from 'express';
+import { ErrorRequestHandler } from 'express';
 
 import env from 'config/env';
 import ClientError from './client';
@@ -12,11 +12,11 @@ export { default as ClientError } from './client';
  * generic error handler -- easy to decorate
  * NOTE: sends the response
  */
-export const errorHandler = (
+export const errorHandler: ErrorRequestHandler = (
     err: Error & { status: number },
-    req: Request<any>,
-    res: Response<any>,
-    next: NextFunction
+    req,
+    res,
+    next
 ): void => {
     if (err instanceof ClientError) {
         res.statusMessage = err.message;

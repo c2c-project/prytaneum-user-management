@@ -1,42 +1,56 @@
 /* eslint-disable @typescript-eslint/indent */
-import { ObjectId, Db, Collection } from 'mongodb';
+import { ObjectId, Collection } from 'mongodb';
 import { getCollection } from './mongo';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-export interface UserDoc extends Express.User {
+export interface UserDoc {
     _id?: ObjectId;
     [index: string]: unknown;
-    username: string;
-    roles: string[];
-    email?: string; // TODO: make sure this isn't undefined
-    name: {
-        fName: string;
-        lName: string;
+    meta: {
+        createdAt: string;
+        method: 'invitation' | 'registration';
     };
-    password: string;
-    verified: boolean;
+    email: {
+        address: string;
+        verified: boolean;
+    };
+    name: {
+        first: string;
+        last: string;
+    };
+    roles: string[];
 }
 
-// export interface DBUser extends UserDoc {
-//     _id: ObjectID | string;
-// }
-// export type DBUser = WithId<UserDoc>;
-type WhiteList = '_id' | 'email' | 'username' | 'roles' | 'name' | 'verified';
+type WhiteList = '_id' | 'email' | 'username' | 'roles' | 'name';
 export const whitelist: string[] = [
     '_id',
     'email',
     'username',
     'roles',
     'name',
-    'verified',
 ];
 export type ClientSafeUserDoc = Pick<UserDoc, WhiteList>;
 
-export default (): Collection<UserDoc> => getCollection<UserDoc>('users');
+export function makeUser(
+    email: string,
+    overrides: Partial<UserDoc> = {}
+): UserDoc {
+    return {
+        meta: {
+            createdAt: new Date().toISOString(),
+            method: 'registration',
+        },
+        email: {
+            address: email,
+            verified: false,
+        },
+        name: {
+            first: '',
+            last: '',
+        },
+        roles: [],
+        ...overrides,
+    };
+}
 
-// export default {
-//     collectionName: 'users',
-//     init(db: Db): Collection<UserDoc> {
-//         return db.collection<UserDoc>(this.collectionName);
-//     },
-// };
+export default (): Collection<UserDoc> => getCollection<UserDoc>('users');

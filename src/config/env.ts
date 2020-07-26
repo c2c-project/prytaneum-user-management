@@ -5,22 +5,23 @@ const { env } = process;
 
 export const defaults = {
     NODE_ENV: 'development',
-    PORT: '3001',
+    PORT: '3000',
     ORIGIN: 'localhost',
     DB_URL: 'mongodb://localhost:27017',
     JWT_SECRET: 'secret',
+    COOKIE_SECRET: 'secret',
 } as Readonly<Required<NodeJS.ProcessEnv>>;
 
 function set(key: keyof NodeJS.ProcessEnv): string {
     const environmentVar = env[key];
     const envDefault = defaults[key];
     if (envDefault === undefined) {
-        throw new Error('Provided invalid environment varialbe name');
+        throw new Error('Provided invalid environment variable name');
     }
     if (environmentVar === undefined) {
         // eslint-disable-next-line no-console
         console.warn(
-            `WARN: Environment variable "${key}" is not defined, using value "${envDefault}".\
+            `WARN: Environment variable "${key}" is not defined, using value "${envDefault}".\n
             Please define "${key}" in your .env file`
         );
     }
@@ -33,6 +34,7 @@ const resilientEnv = {
     ORIGIN: set('ORIGIN'),
     DB_URL: set('DB_URL'),
     JWT_SECRET: set('JWT_SECRET'),
+    COOKIE_SECRET: set('COOKIE_SECRET'),
 } as Required<NodeJS.ProcessEnv>;
 
 export default resilientEnv as Readonly<Required<NodeJS.ProcessEnv>>;
@@ -40,3 +42,18 @@ export default resilientEnv as Readonly<Required<NodeJS.ProcessEnv>>;
 export const _test = {
     env: resilientEnv,
 } as { env: NodeJS.ProcessEnv };
+
+function checkEnv() {
+    if (env.COOOKIE_SECRET === defaults.COOOKIE_SECRET) {
+        throw new Error('COOKIE_SECRET IS SET INCORRECTLY IN PRODUCTION!');
+    }
+    if (env.JWT_SECRET === defaults.JWT_SECRET) {
+        throw new Error('JWT_SECRET IS SET INCORRECTLY IN PRODUCTION!');
+    }
+}
+
+if (env.NODE_ENV === 'production') {
+    checkEnv();
+    // eslint-disable-next-line no-console
+    console.log('checking env...');
+}

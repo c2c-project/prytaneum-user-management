@@ -2,7 +2,7 @@ import { ObjectID } from 'mongodb';
 import request from 'supertest';
 
 import app from 'app';
-import Accounts from 'lib/accounts';
+import Users from 'lib/users';
 import jwt from 'lib/jwt/jwt';
 import Collections, { connect, close } from 'db';
 // import Mongo from 'db/mongo';
@@ -20,7 +20,7 @@ const mockUser = {
 
 beforeAll(async () => {
     await connect();
-    const { insertedId } = await Accounts.register(
+    const { insertedId } = await Users.register(
         mockUser.username,
         mockUser.password,
         mockUser.password,
@@ -31,7 +31,7 @@ beforeAll(async () => {
     mockUser._id = insertedId;
 });
 afterAll(async () => {
-    await Collections.Users().deleteOne({ email: mockUser.email });
+    await Collections.Users().deleteOne({ 'email.address': mockUser.email });
     await close();
 });
 
@@ -135,7 +135,9 @@ describe('users', () => {
                     },
                 });
             expect(status).toStrictEqual(200);
-            await Collections.Users().deleteOne({ email: 'blah@blah.com' });
+            await Collections.Users().deleteOne({
+                'email.address': 'blah@blah.com',
+            });
         });
         it('should not register an already existing user', async () => {
             const { status } = await request(app)
