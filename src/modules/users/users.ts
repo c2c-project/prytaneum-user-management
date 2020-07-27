@@ -9,9 +9,9 @@ import {
 
 import Collections, { UserUtils } from 'db';
 import env from 'config/env';
-import jwt from '../jwt/jwt';
-import { ClientError } from '../errors';
-import Emails from '../email';
+import jwt from '../../lib/jwt/jwt';
+import { ClientError } from '../../lib/errors';
+import Emails from '../../lib/email';
 
 const SALT_ROUNDS = 10;
 
@@ -117,7 +117,7 @@ const register = async (
     const match = await Collections.Users().findOne({
         'email.address': email,
     });
-    if (!match) throw new ClientError('Username or E-mail already exists');
+    if (match) throw new ClientError('Username or E-mail already exists');
 
     const encryptedPw = await bcrypt.hash(password, SALT_ROUNDS);
     const user = UserUtils.makeUser(email, { password: encryptedPw });

@@ -33,7 +33,7 @@ export const errorHandler: ErrorRequestHandler = (
         // TODO: proper logging here
         // if there is no status attached, then an internal error occured, hence 500
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const status = err.status || 500;
+        const status = err.status || 400;
         res.status(status).send();
         // console.error(err);
     }

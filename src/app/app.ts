@@ -11,7 +11,7 @@ function initApp(): Express {
     if (env.NODE_ENV === 'test') {
         app.get('/', (req, res) => res.sendStatus(200));
     }
-    app.use('/api/auth', routes);
+    app.use(routes);
     app.use((req, res, next) => {
         next(createError(404));
     });

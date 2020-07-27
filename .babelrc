@@ -9,6 +9,9 @@
                 "root": "src",
                 "extensions": [".js", ".jsx", ".es", ".es6", ".mjs", ".ts"]
             }
-        ]
-    ]
+        ],
+        "@babel/plugin-proposal-export-namespace-from"
+    ],
+    "include": ["./src"],
+    "exclude": ["**/*.test.*"]
 }
