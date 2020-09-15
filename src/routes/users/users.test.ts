@@ -120,11 +120,12 @@ describe('users', () => {
     // });
 
     describe('#register', () => {
+        const url = '/api/users/register';
         it('should register a user', async () => {
             const password = faker.internet.password();
             const email = faker.internet.email();
             const { status } = await request(app)
-                .post('/api/users/register')
+                .post(url)
                 .send({
                     form: {
                         email,
@@ -139,7 +140,7 @@ describe('users', () => {
         });
         it('should not register an already existing user', async () => {
             const { status } = await request(app)
-                .post('/api/users/register')
+                .post(url)
                 .send({
                     form: {
                         email: mockUser.email,
@@ -152,7 +153,7 @@ describe('users', () => {
 
         it('should not register mismatching passwords', async () => {
             const { status } = await request(app)
-                .post('/api/users/register')
+                .post(url)
                 .send({
                     form: {
                         email: mockUser.email,
@@ -181,47 +182,48 @@ describe('users', () => {
     //     });
     // });
     describe('#email verification', () => {
+        const url = '/api/users/email/verify';
         it('should reject an invalid userId', async () => {
             const { status } = await request(app)
-                .post('/api/users/confirm/user-email')
+                .post(url)
                 .send({ userId: new ObjectID() });
             expect(status).toStrictEqual(400);
         });
         it('should reject an empty userId', async () => {
-            const { status } = await request(app)
-                .post('/api/users/confirm/user-email')
-                .send();
+            const { status } = await request(app).post(url).send();
             expect(status).toStrictEqual(400);
         });
         it('should accept a valid userId', async () => {
             const { _id } = mockUser;
             const { status } = await request(app)
-                .post('/api/users/confirm/user-email')
+                .post(url)
                 .send({ userId: _id });
             expect(status).toStrictEqual(200);
         });
     });
     describe('#request-password-reset', () => {
+        const url = '/api/users/password/forgot-password';
         it('should accept valid email', async () => {
             const { status } = await request(app)
-                .post('/api/users/request-password-reset')
+                .post(url)
                 .send({ form: { email: mockUser.email } });
             expect(status).toStrictEqual(200);
         });
         it('should reject undefined email', async () => {
             const { status } = await request(app)
-                .post('/api/users/request-password-reset')
+                .post(url)
                 .send({ form: { email: undefined } });
             expect(status).toStrictEqual(400);
         });
         it('should reject invalid email', async () => {
             const { status } = await request(app)
-                .post('/api/users/request-password-reset')
+                .post(url)
                 .send({ form: { email: 'invalidEmail' } });
             expect(status).toStrictEqual(400);
         });
     });
     describe('#consume-password-reset-token', () => {
+        const url = '/api/users/password/consume-reset-token';
         it('should accept valid token', async () => {
             const password = faker.internet.password();
             const { _id } = mockUser;
@@ -233,7 +235,7 @@ describe('users', () => {
             );
 
             const { status } = await request(app)
-                .post('/api/users/consume-password-reset-token')
+                .post(url)
                 .send({
                     token,
                     form: {
@@ -245,7 +247,7 @@ describe('users', () => {
         });
         it('should reject invalid token', async () => {
             const { status } = await request(app)
-                .post('/api/users/consume-password-reset-token')
+                .post(url)
                 .send({
                     form: { password: '1', confirmPassword: '1' },
                 })
@@ -255,7 +257,7 @@ describe('users', () => {
         });
         it('should reject missing token', async () => {
             const { status } = await request(app)
-                .post('/api/users/consume-password-reset-token')
+                .post(url)
                 .send({
                     form: { password: '1', confirmPassword: '1' },
                 })
@@ -273,7 +275,7 @@ describe('users', () => {
             );
 
             const { status } = await request(app)
-                .post('/api/users/consume-password-reset-token')
+                .post(url)
                 .send({
                     token,
                     form: {
@@ -293,7 +295,7 @@ describe('users', () => {
             );
 
             const { status } = await request(app)
-                .post('/api/users/consume-password-reset-token')
+                .post(url)
                 .send({
                     token,
                     form: { password: '1', confirmPassword: '2' },

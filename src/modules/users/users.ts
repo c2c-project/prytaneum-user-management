@@ -9,6 +9,7 @@ import {
 
 import Collections, { UserUtils } from 'db';
 import env from 'config/env';
+import { makeUser } from 'db/users';
 import jwt from '../../lib/jwt/jwt';
 import { ClientError } from '../../lib/errors';
 import Emails from '../../lib/email';
@@ -120,7 +121,7 @@ const register = async (
     if (match) throw new ClientError('Username or E-mail already exists');
 
     const encryptedPw = await bcrypt.hash(password, SALT_ROUNDS);
-    const user = UserUtils.makeUser(email, { password: encryptedPw });
+    const user = makeUser(email, { password: encryptedPw });
     return Collections.Users().insertOne(user);
 };
 

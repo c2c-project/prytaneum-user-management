@@ -53,7 +53,7 @@ router.post(
 );
 
 router.post(
-    '/confirm/user-email',
+    '/email/verify',
     makeJoiMiddleware({
         body: Joi.object({
             userId: Joi.string()
@@ -73,7 +73,7 @@ router.post(
 );
 
 router.post(
-    '/request-password-reset',
+    '/password/forgot-password',
     makeJoiMiddleware({
         body: Joi.object({
             form: Joi.object({
@@ -97,7 +97,7 @@ router.post(
 
 // Call to update to new password
 router.post(
-    '/consume-password-reset-token',
+    '/password/consume-reset-token',
     makeJoiMiddleware({
         body: Joi.object({
             token: Joi.string().required(),
