@@ -46,6 +46,7 @@ describe('#User List', () => {
 
     it('it should retrieve a list of user for admin to see', async () => {
         const { status } = await request(app).get(url);
+
         expect(status).toStrictEqual(200);
     });
 

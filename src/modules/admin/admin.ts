@@ -6,19 +6,24 @@ import { ClientError } from 'lib/errors';
 import { userStatus } from './types';
 
 // TODO Modify appropriately when authorization is complete
-const isAdminMiddleware: RequestHandler = async (req, res, next) => {
-    const token = req.header('auth-token');
-    if (!token) return res.sendStatus(401);
-    try {
-        const verified = await jwt.verify(token);
-        if (verified) {
-            return next();
-        }
-    } catch (e) {
-        return res.sendStatus(401);
-    }
+// const isAdminMiddleware: RequestHandler = async (req, res, next) => {
+//     const token = req.header('auth-token');
+//     if (!token) return res.sendStatus(401);
+//     try {
+//         const verified = await jwt.verify(token);
+//         if (verified) {
+//             return next();
+//         }
+//     } catch (e) {
+//         return res.sendStatus(401);
+//     }
 
-    return res.sendStatus(401);
+//     return res.sendStatus(401);
+// };
+
+const isAdminMiddleware: RequestHandler = (req, res, next) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return next();
 };
 
 /**
