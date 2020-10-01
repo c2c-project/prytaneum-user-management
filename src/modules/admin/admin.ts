@@ -48,7 +48,7 @@ const fetchAllUsers = async (): Promise<UserUtils.UserDoc[]> => {
  */
 
 const confirmUserExist = async (userId: string): Promise<UserUtils.UserDoc> => {
-    const objectUserId = new ObjectID(userId);
+    const objectUserId = ObjectID.createFromHexString(userId);
     const doc = await Collections.Users().findOne({ _id: objectUserId });
     if (doc) {
         return doc;

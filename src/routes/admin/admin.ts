@@ -16,16 +16,6 @@ router.use(Admin.isAdminMiddleware);
     3. promote user
 */
 
-// *Fetch all the user data
-router.get('/users/list', async (req, res, next) => {
-    try {
-        const users = await Admin.fetchAllUsers();
-        res.status(200).send(users);
-    } catch (e) {
-        next(e);
-    }
-});
-
 // *Fetch A specific user data
 router.get(
     '/users/:userId',
@@ -44,6 +34,7 @@ router.get(
                 res.status(200).send(user);
             }
         } catch (e) {
+            console.log(e);
             next(e);
         }
     }
@@ -89,5 +80,15 @@ router.patch(
         }
     }
 );
+
+// *Fetch all the user data
+router.get('/users', async (req, res, next) => {
+    try {
+        const users = await Admin.fetchAllUsers();
+        res.status(200).send(users);
+    } catch (e) {
+        next(e);
+    }
+});
 
 export default router;
