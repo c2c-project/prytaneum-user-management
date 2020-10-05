@@ -19,6 +19,7 @@ export interface UserDoc {
         last: string;
     };
     roles: string[];
+    password: string;
 }
 
 type WhiteList = '_id' | 'email' | 'username' | 'roles' | 'name';
@@ -33,7 +34,7 @@ export type ClientSafeUserDoc = Pick<UserDoc, WhiteList>;
 
 export function makeUser(
     email: string,
-    overrides: Partial<UserDoc> = {}
+    overrides: Partial<UserDoc> & { password: string }
 ): UserDoc {
     return {
         meta: {
